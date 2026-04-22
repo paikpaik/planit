@@ -143,6 +143,77 @@ describe('TaskStore.remove', () => {
   });
 });
 
+describe('TaskStore.refresh', () => {
+  it('reloads tasks from persistence and notifies when content changes', async () => {
+    const persistence = makePersistence();
+    const store = new TaskStore(persistence);
+    await store.init();
+
+    const listener = jest.fn();
+    store.subscribe(listener);
+
+    persistence.loadTasks.mockResolvedValueOnce({
+      schemaVersion: SCHEMA_VERSION,
+      tasks: [
+        {
+          id: 'tsk_external',
+          title: '외부 추가',
+          listId: 'list_inbox',
+          tags: [],
+          date: '2026-04-23',
+          start: null,
+          end: null,
+          priority: 'none',
+          done: false,
+          completedAt: null,
+          description: '',
+          subtasks: [],
+          noteRef: null,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      ],
+    });
+
+    await store.refresh();
+
+    expect(store.getAll()).toHaveLength(1);
+    expect(store.getAll()[0].title).toBe('외부 추가');
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not notify when reloaded content is identical', async () => {
+    const persistence = makePersistence();
+    const store = new TaskStore(persistence);
+    await store.init();
+    const created = await store.add({
+      title: 'same',
+      listId: 'list_inbox',
+      tags: [],
+      date: null,
+      start: null,
+      end: null,
+      priority: 'none',
+      done: false,
+      completedAt: null,
+      description: '',
+      subtasks: [],
+      noteRef: null,
+    });
+
+    const listener = jest.fn();
+    store.subscribe(listener);
+
+    persistence.loadTasks.mockResolvedValueOnce({
+      schemaVersion: SCHEMA_VERSION,
+      tasks: [created],
+    });
+
+    await store.refresh();
+    expect(listener).not.toHaveBeenCalled();
+  });
+});
+
 describe('TaskStore.toggleDone', () => {
   it('marks an open task done with a completedAt timestamp', async () => {
     const persistence = makePersistence();

@@ -65,6 +65,14 @@ export class TaskStore {
     this.notify();
   }
 
+  async refresh(): Promise<void> {
+    const file = await this.persistence.loadTasks();
+    const prev = JSON.stringify(this.tasks);
+    const next = JSON.stringify(file.tasks);
+    this.tasks = file.tasks;
+    if (prev !== next) this.notify();
+  }
+
   async toggleDone(id: string): Promise<void> {
     const index = this.tasks.findIndex((t) => t.id === id);
     if (index === -1) return;
