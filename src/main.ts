@@ -21,7 +21,7 @@ export default class PlanitPlugin extends Plugin {
     await this.taskStore.init();
     this.lists = await this.storage.loadLists();
 
-    this.registerView(VIEW_TYPE_PLANIT, (leaf) => new PlanitView(leaf, this.taskStore));
+    this.registerView(VIEW_TYPE_PLANIT, (leaf) => new PlanitView(leaf, this));
 
     this.addRibbonIcon('calendar', 'Open Planit', () => {
       this.activateView();

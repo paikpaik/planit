@@ -1,11 +1,12 @@
 import type { WorkspaceLeaf } from 'obsidian';
 import { ItemView } from 'obsidian';
 
-import type { TaskStore } from '../../core/store';
 import type { Task } from '../../core/types';
 import { VIEW_TYPE_PLANIT } from '../../core/types';
+import type PlanitPlugin from '../../main';
 import type { WeekStart } from '../../utils/date';
 import { addMonths, getMonthMatrix, isSameDay, toISODate } from '../../utils/date';
+import { QuickAddModal } from './QuickAddModal';
 
 const WEEKDAY_LABELS_MON_FIRST = ['월', '화', '수', '목', '금', '토', '일'];
 const WEEKDAY_LABELS_SUN_FIRST = ['일', '월', '화', '수', '목', '금', '토'];
@@ -16,7 +17,7 @@ export class PlanitView extends ItemView {
   private weekStart: WeekStart = 1;
   private unsubscribe: (() => void) | null = null;
 
-  constructor(leaf: WorkspaceLeaf, private taskStore: TaskStore) {
+  constructor(leaf: WorkspaceLeaf, private plugin: PlanitPlugin) {
     super(leaf);
   }
 
@@ -35,7 +36,7 @@ export class PlanitView extends ItemView {
   async onOpen(): Promise<void> {
     const today = new Date();
     this.cursor = new Date(today.getFullYear(), today.getMonth(), 1);
-    this.unsubscribe = this.taskStore.subscribe(() => this.render());
+    this.unsubscribe = this.plugin.taskStore.subscribe(() => this.render());
     this.render();
   }
 
@@ -96,8 +97,14 @@ export class PlanitView extends ItemView {
 
         cell.createDiv({ cls: 'planit-cell-date', text: String(date.getDate()) });
 
-        const tasks = this.taskStore.getByDate(toISODate(date));
+        const iso = toISODate(date);
+        const tasks = this.plugin.taskStore.getByDate(iso);
         this.renderCellTasks(cell, tasks);
+
+        cell.addEventListener('click', (e) => {
+          if ((e.target as HTMLElement).closest('.planit-chip')) return;
+          this.openQuickAdd(iso);
+        });
       }
     }
   }
@@ -118,6 +125,21 @@ export class PlanitView extends ItemView {
     if (overflow > 0) {
       list.createDiv({ cls: 'planit-chip-overflow', text: `+${overflow}` });
     }
+  }
+
+  private openQuickAdd(date: string): void {
+    const modal = new QuickAddModal(
+      this.app,
+      {
+        date,
+        listId: this.plugin.settings.defaultListId,
+        lists: this.plugin.lists.lists,
+      },
+      async (input) => {
+        await this.plugin.taskStore.add(input);
+      }
+    );
+    modal.open();
   }
 
   private shiftMonth(delta: number): void {

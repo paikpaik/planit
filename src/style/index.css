@@ -2,3 +2,4 @@
 /* Add new modules here to include them in the build. */
 
 @import "./components/calendar.css";
+@import "./components/quick-add.css";

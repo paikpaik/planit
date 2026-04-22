@@ -1,0 +1,46 @@
+.planit-quick-add .planit-quick-add-title {
+  margin: 0 0 4px;
+  font-size: 1.1em;
+}
+
+.planit-quick-add .planit-quick-add-date {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.planit-quick-add-input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 6px 8px;
+  font-size: 1em;
+}
+
+.planit-quick-add-time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.planit-quick-add-time {
+  width: 6em;
+  padding: 4px 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.planit-quick-add-time-sep {
+  color: var(--text-muted);
+}
+
+.planit-quick-add-list {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 4px 6px;
+}
+
+.planit-quick-add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

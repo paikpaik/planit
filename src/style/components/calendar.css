@@ -75,6 +75,15 @@
   min-height: 72px;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.planit-cell:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-cell.is-other-month:hover {
+  background: var(--background-modifier-hover);
 }
 
 .planit-cell.is-other-month {
