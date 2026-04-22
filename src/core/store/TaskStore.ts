@@ -65,6 +65,22 @@ export class TaskStore {
     this.notify();
   }
 
+  async toggleDone(id: string): Promise<void> {
+    const index = this.tasks.findIndex((t) => t.id === id);
+    if (index === -1) return;
+    const current = this.tasks[index];
+    const nowTs = Date.now();
+    const merged: Task = {
+      ...current,
+      done: !current.done,
+      completedAt: current.done ? null : nowTs,
+      updatedAt: nowTs,
+    };
+    this.tasks = [...this.tasks.slice(0, index), merged, ...this.tasks.slice(index + 1)];
+    await this.persist();
+    this.notify();
+  }
+
   async remove(id: string): Promise<void> {
     const next = this.tasks.filter((t) => t.id !== id);
     if (next.length === this.tasks.length) return;

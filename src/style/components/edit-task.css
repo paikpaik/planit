@@ -1,0 +1,54 @@
+.planit-edit-task .planit-edit-task-heading {
+  margin: 0 0 12px;
+}
+
+.planit-edit-task-input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 6px 8px;
+  font-size: 1em;
+}
+
+.planit-edit-task-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.planit-edit-task-label {
+  width: 5em;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.planit-edit-task-label-block {
+  display: block;
+  width: auto;
+  margin: 6px 0 4px;
+}
+
+.planit-edit-task-date,
+.planit-edit-task-select {
+  flex: 1;
+  padding: 4px 6px;
+}
+
+.planit-edit-task-textarea {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 6px 8px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.planit-edit-task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.planit-edit-task-delete {
+  color: var(--text-error);
+}

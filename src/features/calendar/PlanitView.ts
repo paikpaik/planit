@@ -6,6 +6,7 @@ import { VIEW_TYPE_PLANIT } from '../../core/types';
 import type PlanitPlugin from '../../main';
 import type { WeekStart } from '../../utils/date';
 import { addMonths, getMonthMatrix, isSameDay, toISODate } from '../../utils/date';
+import { EditTaskModal } from './EditTaskModal';
 import { QuickAddModal } from './QuickAddModal';
 
 const WEEKDAY_LABELS_MON_FIRST = ['월', '화', '수', '목', '금', '토', '일'];
@@ -116,15 +117,48 @@ export class PlanitView extends ItemView {
     for (const task of visible) {
       const chip = list.createDiv({ cls: 'planit-chip' });
       if (task.done) chip.addClass('is-done');
+
+      const checkbox = chip.createEl('button', {
+        cls: 'planit-chip-check',
+        attr: { 'aria-label': task.done ? '완료 해제' : '완료 처리' },
+      });
+      checkbox.addEventListener('click', (e) => {
+        e.stopPropagation();
+        void this.plugin.taskStore.toggleDone(task.id);
+      });
+
+      const body = chip.createDiv({ cls: 'planit-chip-body' });
       if (task.start) {
-        chip.createSpan({ cls: 'planit-chip-time', text: task.start });
+        body.createSpan({ cls: 'planit-chip-time', text: task.start });
       }
-      chip.createSpan({ cls: 'planit-chip-title', text: task.title });
+      body.createSpan({ cls: 'planit-chip-title', text: task.title });
+
+      body.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openEditTask(task);
+      });
     }
     const overflow = tasks.length - visible.length;
     if (overflow > 0) {
       list.createDiv({ cls: 'planit-chip-overflow', text: `+${overflow}` });
     }
+  }
+
+  private openEditTask(task: Task): void {
+    const modal = new EditTaskModal(
+      this.app,
+      task,
+      this.plugin.lists.lists,
+      {
+        onSave: async (patch) => {
+          await this.plugin.taskStore.update(task.id, patch);
+        },
+        onDelete: async () => {
+          await this.plugin.taskStore.remove(task.id);
+        },
+      }
+    );
+    modal.open();
   }
 
   private openQuickAdd(date: string): void {

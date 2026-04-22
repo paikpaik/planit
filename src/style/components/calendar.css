@@ -120,7 +120,7 @@
 
 .planit-chip {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 4px;
   padding: 2px 6px;
   border-radius: 4px;
@@ -128,13 +128,55 @@
   font-size: 0.78em;
   line-height: 1.25;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
-.planit-chip.is-done {
+.planit-chip.is-done .planit-chip-body {
   opacity: 0.55;
   text-decoration: line-through;
+}
+
+.planit-chip-check {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planit-chip-check:hover {
+  border-color: var(--interactive-accent);
+}
+
+.planit-chip.is-done .planit-chip-check {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+}
+
+.planit-chip.is-done .planit-chip-check::after {
+  content: '';
+  width: 6px;
+  height: 3px;
+  border-left: 1.5px solid var(--text-on-accent);
+  border-bottom: 1.5px solid var(--text-on-accent);
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
+.planit-chip-body {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
 }
 
 .planit-chip-time {

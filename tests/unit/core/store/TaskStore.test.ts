@@ -143,6 +143,71 @@ describe('TaskStore.remove', () => {
   });
 });
 
+describe('TaskStore.toggleDone', () => {
+  it('marks an open task done with a completedAt timestamp', async () => {
+    const persistence = makePersistence();
+    const store = new TaskStore(persistence);
+    await store.init();
+    const created = await store.add({
+      title: 't',
+      listId: 'list_inbox',
+      tags: [],
+      date: null,
+      start: null,
+      end: null,
+      priority: 'none',
+      done: false,
+      completedAt: null,
+      description: '',
+      subtasks: [],
+      noteRef: null,
+    });
+
+    await store.toggleDone(created.id);
+
+    const got = store.getAll().find((t) => t.id === created.id)!;
+    expect(got.done).toBe(true);
+    expect(got.completedAt).toBeGreaterThan(0);
+  });
+
+  it('reopens a done task and clears completedAt', async () => {
+    const persistence = makePersistence();
+    const store = new TaskStore(persistence);
+    await store.init();
+    const created = await store.add({
+      title: 't',
+      listId: 'list_inbox',
+      tags: [],
+      date: null,
+      start: null,
+      end: null,
+      priority: 'none',
+      done: false,
+      completedAt: null,
+      description: '',
+      subtasks: [],
+      noteRef: null,
+    });
+    await store.toggleDone(created.id);
+    await store.toggleDone(created.id);
+
+    const got = store.getAll().find((t) => t.id === created.id)!;
+    expect(got.done).toBe(false);
+    expect(got.completedAt).toBeNull();
+  });
+
+  it('no-ops on unknown id', async () => {
+    const persistence = makePersistence();
+    const store = new TaskStore(persistence);
+    await store.init();
+    const listener = jest.fn();
+    store.subscribe(listener);
+
+    await store.toggleDone('nope');
+    expect(listener).not.toHaveBeenCalled();
+  });
+});
+
 describe('TaskStore.subscribe', () => {
   it('returns an unsubscribe function that stops notifications', async () => {
     const persistence = makePersistence();
