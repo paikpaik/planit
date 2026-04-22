@@ -1,0 +1,147 @@
+.planit-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.planit-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.planit-toolbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.planit-toolbar-title {
+  font-size: 1.2em;
+  font-weight: 600;
+  min-width: 8em;
+  text-align: center;
+}
+
+.planit-nav-btn,
+.planit-today-btn {
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.95em;
+}
+
+.planit-nav-btn {
+  min-width: 2em;
+}
+
+.planit-nav-btn:hover,
+.planit-today-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-weekday-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  color: var(--text-muted);
+  font-size: 0.85em;
+}
+
+.planit-weekday {
+  padding: 4px 6px;
+  text-align: center;
+}
+
+.planit-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 1px;
+  background: var(--background-modifier-border);
+  border: 1px solid var(--background-modifier-border);
+  flex: 1;
+  min-height: 480px;
+}
+
+.planit-cell {
+  background: var(--background-primary);
+  padding: 4px 6px;
+  min-height: 72px;
+  position: relative;
+  overflow: hidden;
+}
+
+.planit-cell.is-other-month {
+  background: var(--background-secondary);
+}
+
+.planit-cell.is-other-month .planit-cell-date {
+  color: var(--text-faint);
+}
+
+.planit-cell.is-today .planit-cell-date {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 999px;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planit-cell-date {
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.planit-cell-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.planit-chip {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--background-modifier-hover);
+  font-size: 0.78em;
+  line-height: 1.25;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.planit-chip.is-done {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.planit-chip-time {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.planit-chip-title {
+  color: var(--text-normal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.planit-chip-overflow {
+  font-size: 0.72em;
+  color: var(--text-muted);
+  padding-left: 4px;
+}
