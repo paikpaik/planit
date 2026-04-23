@@ -2,29 +2,32 @@ import type { EventRef } from 'obsidian';
 import { Notice, Plugin } from 'obsidian';
 
 import { StorageService } from './core/storage';
-import { TaskStore } from './core/store';
-import type { ListsFile, PlanitSettings } from './core/types';
+import { ListStore, TaskStore } from './core/store';
+import type { PlanitSettings } from './core/types';
 import { DEFAULT_SETTINGS, VIEW_TYPE_PLANIT } from './core/types';
 import { PlanitView } from './features/calendar/PlanitView';
 import { toISODate } from './utils/date';
 
 const TASKS_FILE_PATH = '.planit/tasks.json';
+const LISTS_FILE_PATH = '.planit/lists.json';
 const EXTERNAL_REFRESH_DEBOUNCE_MS = 100;
 
 export default class PlanitPlugin extends Plugin {
   settings!: PlanitSettings;
   storage!: StorageService;
   taskStore!: TaskStore;
-  lists!: ListsFile;
+  listStore!: ListStore;
   private externalRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+  private externalListsRefreshTimer: ReturnType<typeof setTimeout> | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
 
     this.storage = new StorageService(this.app);
     this.taskStore = new TaskStore(this.storage);
+    this.listStore = new ListStore(this.storage);
     await this.taskStore.init();
-    this.lists = await this.storage.loadLists();
+    await this.listStore.init();
 
     this.registerView(VIEW_TYPE_PLANIT, (leaf) => new PlanitView(leaf, this));
 
@@ -47,8 +50,8 @@ export default class PlanitPlugin extends Plugin {
     }).on;
     this.registerEvent(
       vaultOnRaw.call(this.app.vault, 'raw', (path: string) => {
-        if (path !== TASKS_FILE_PATH) return;
-        this.scheduleExternalRefresh();
+        if (path === TASKS_FILE_PATH) this.scheduleExternalRefresh();
+        else if (path === LISTS_FILE_PATH) this.scheduleExternalListsRefresh();
       })
     );
 
@@ -80,6 +83,10 @@ export default class PlanitPlugin extends Plugin {
       clearTimeout(this.externalRefreshTimer);
       this.externalRefreshTimer = null;
     }
+    if (this.externalListsRefreshTimer) {
+      clearTimeout(this.externalListsRefreshTimer);
+      this.externalListsRefreshTimer = null;
+    }
   }
 
   private scheduleExternalRefresh(): void {
@@ -87,6 +94,14 @@ export default class PlanitPlugin extends Plugin {
     this.externalRefreshTimer = setTimeout(() => {
       this.externalRefreshTimer = null;
       void this.taskStore.refresh();
+    }, EXTERNAL_REFRESH_DEBOUNCE_MS);
+  }
+
+  private scheduleExternalListsRefresh(): void {
+    if (this.externalListsRefreshTimer) clearTimeout(this.externalListsRefreshTimer);
+    this.externalListsRefreshTimer = setTimeout(() => {
+      this.externalListsRefreshTimer = null;
+      void this.listStore.refresh();
     }, EXTERNAL_REFRESH_DEBOUNCE_MS);
   }
 

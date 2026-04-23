@@ -63,7 +63,9 @@ export class QuickAddModal extends Modal {
     const cancelBtn = actions.createEl('button', { text: '취소' });
     const saveBtn = actions.createEl('button', { text: '저장', cls: 'mod-cta' });
 
+    let submitting = false;
     const submit = async (): Promise<void> => {
+      if (submitting) return;
       const title = titleInput.value.trim();
       if (title === '') {
         titleInput.focus();
@@ -92,13 +94,19 @@ export class QuickAddModal extends Modal {
         listId: listSelect.value,
       });
 
-      await this.onSave(input);
+      submitting = true;
+      try {
+        await this.onSave(input);
+      } finally {
+        submitting = false;
+      }
       this.close();
     };
 
     const handleEnter = (e: KeyboardEvent): void => {
       if (e.key === 'Enter') {
         e.preventDefault();
+        e.stopPropagation();
         void submit();
       }
     };

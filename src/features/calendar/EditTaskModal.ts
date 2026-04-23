@@ -111,7 +111,9 @@ export class EditTaskModal extends Modal {
     const cancelBtn = actions.createEl('button', { text: '취소' });
     const saveBtn = actions.createEl('button', { text: '저장', cls: 'mod-cta' });
 
+    let submitting = false;
     const submit = async (): Promise<void> => {
+      if (submitting) return;
       const title = titleInput.value.trim();
       if (title === '') {
         titleInput.focus();
@@ -141,20 +143,33 @@ export class EditTaskModal extends Modal {
         description: descInput.value,
       });
 
-      await this.callbacks.onSave(patch);
+      submitting = true;
+      try {
+        await this.callbacks.onSave(patch);
+      } finally {
+        submitting = false;
+      }
       this.close();
     };
 
     saveBtn.addEventListener('click', () => void submit());
     cancelBtn.addEventListener('click', () => this.close());
+    let deleting = false;
     deleteBtn.addEventListener('click', async () => {
-      await this.callbacks.onDelete();
+      if (deleting) return;
+      deleting = true;
+      try {
+        await this.callbacks.onDelete();
+      } finally {
+        deleting = false;
+      }
       this.close();
     });
 
     const handleEnter = (e: KeyboardEvent): void => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
+        e.stopPropagation();
         void submit();
       }
     };

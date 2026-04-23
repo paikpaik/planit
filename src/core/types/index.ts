@@ -50,11 +50,13 @@ export interface ListsFile {
 export interface PlanitSettings {
   defaultListId: string;
   locale: 'ko' | 'en';
+  sidebarExpanded: boolean;
 }
 
 export const DEFAULT_SETTINGS: PlanitSettings = {
   defaultListId: 'list_inbox',
   locale: 'ko',
+  sidebarExpanded: false,
 };
 
 export const DEFAULT_LISTS: List[] = [

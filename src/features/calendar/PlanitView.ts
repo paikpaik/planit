@@ -1,22 +1,24 @@
 import type { WorkspaceLeaf } from 'obsidian';
-import { ItemView } from 'obsidian';
+import { ItemView, Menu, Notice, setIcon } from 'obsidian';
 
-import type { Task } from '../../core/types';
+import type { List, Task } from '../../core/types';
 import { VIEW_TYPE_PLANIT } from '../../core/types';
 import type PlanitPlugin from '../../main';
 import type { WeekStart } from '../../utils/date';
 import { addMonths, getMonthMatrix, isSameDay, toISODate } from '../../utils/date';
 import { EditTaskModal } from './EditTaskModal';
+import { ListEditorModal } from './ListEditorModal';
 import { QuickAddModal } from './QuickAddModal';
 
 const WEEKDAY_LABELS_MON_FIRST = ['월', '화', '수', '목', '금', '토', '일'];
 const WEEKDAY_LABELS_SUN_FIRST = ['일', '월', '화', '수', '목', '금', '토'];
-const CHIPS_PER_CELL = 3;
 
 export class PlanitView extends ItemView {
   private cursor: Date = new Date();
   private weekStart: WeekStart = 1;
-  private unsubscribe: (() => void) | null = null;
+  private activeListId: string | null = null;
+  private unsubscribeTasks: (() => void) | null = null;
+  private unsubscribeLists: (() => void) | null = null;
 
   constructor(leaf: WorkspaceLeaf, private plugin: PlanitPlugin) {
     super(leaf);
@@ -37,13 +39,16 @@ export class PlanitView extends ItemView {
   async onOpen(): Promise<void> {
     const today = new Date();
     this.cursor = new Date(today.getFullYear(), today.getMonth(), 1);
-    this.unsubscribe = this.plugin.taskStore.subscribe(() => this.render());
+    this.unsubscribeTasks = this.plugin.taskStore.subscribe(() => this.render());
+    this.unsubscribeLists = this.plugin.listStore.subscribe(() => this.render());
     this.render();
   }
 
   async onClose(): Promise<void> {
-    this.unsubscribe?.();
-    this.unsubscribe = null;
+    this.unsubscribeTasks?.();
+    this.unsubscribeLists?.();
+    this.unsubscribeTasks = null;
+    this.unsubscribeLists = null;
   }
 
   private render(): void {
@@ -51,13 +56,142 @@ export class PlanitView extends ItemView {
     root.empty();
     root.addClass('planit-view');
 
-    this.renderToolbar(root);
-    this.renderWeekdayHeader(root);
-    this.renderGrid(root);
+    if (this.plugin.settings.sidebarExpanded) {
+      this.renderSidebar(root);
+    }
+
+    const main = root.createDiv({ cls: 'planit-main' });
+    this.renderToolbar(main);
+
+    const scroll = main.createDiv({ cls: 'planit-scroll' });
+    this.renderWeekdayHeader(scroll);
+    this.renderGrid(scroll);
+  }
+
+  private toggleSidebar(): void {
+    this.plugin.settings.sidebarExpanded = !this.plugin.settings.sidebarExpanded;
+    void this.plugin.saveSettings();
+    this.render();
+  }
+
+  private renderSidebar(root: HTMLElement): void {
+    const sidebar = root.createDiv({ cls: 'planit-sidebar' });
+    sidebar.createDiv({ cls: 'planit-sidebar-heading', text: '리스트' });
+
+    const allItem = sidebar.createDiv({ cls: 'planit-sidebar-item' });
+    if (this.activeListId === null) allItem.addClass('is-active');
+    allItem.createDiv({ cls: 'planit-sidebar-dot planit-sidebar-dot-all' });
+    allItem.createSpan({ cls: 'planit-sidebar-name', text: '전체' });
+    allItem.addEventListener('click', () => this.selectList(null));
+
+    const lists = [...this.plugin.listStore.getAll()].sort((a, b) => a.order - b.order);
+    for (const list of lists) {
+      this.renderSidebarItem(sidebar, list);
+    }
+
+    const addBtn = sidebar.createDiv({ cls: 'planit-sidebar-add' });
+    addBtn.createSpan({ cls: 'planit-sidebar-add-icon', text: '+' });
+    addBtn.createSpan({ cls: 'planit-sidebar-add-label', text: '새 리스트' });
+    addBtn.addEventListener('click', () => this.openCreateList());
+  }
+
+  private renderSidebarItem(sidebar: HTMLElement, list: List): void {
+    const item = sidebar.createDiv({ cls: 'planit-sidebar-item' });
+    if (this.activeListId === list.id) item.addClass('is-active');
+    const dot = item.createDiv({ cls: 'planit-sidebar-dot' });
+    dot.style.background = list.color;
+    item.createSpan({ cls: 'planit-sidebar-name', text: list.name });
+
+    const menuBtn = item.createEl('button', {
+      cls: 'planit-sidebar-menu-btn',
+      text: '⋮',
+      attr: { 'aria-label': '리스트 메뉴' },
+    });
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.openListMenu(e, list);
+    });
+
+    item.addEventListener('click', () => this.selectList(list.id));
+  }
+
+  private selectList(listId: string | null): void {
+    this.activeListId = listId;
+    this.render();
+  }
+
+  private openCreateList(): void {
+    const modal = new ListEditorModal(this.app, 'create', null, {
+      onSave: async (input) => {
+        await this.plugin.listStore.add(input);
+      },
+    });
+    modal.open();
+  }
+
+  private openListMenu(e: MouseEvent, list: List): void {
+    const menu = new Menu();
+    menu.addItem((item) =>
+      item
+        .setTitle('편집')
+        .setIcon('pencil')
+        .onClick(() => this.openEditList(list))
+    );
+    const isInbox = list.id === 'list_inbox';
+    menu.addItem((item) =>
+      item
+        .setTitle('삭제')
+        .setIcon('trash')
+        .setDisabled(isInbox)
+        .onClick(() => {
+          if (isInbox) return;
+          void this.deleteList(list);
+        })
+    );
+    menu.showAtMouseEvent(e);
+  }
+
+  private openEditList(list: List): void {
+    const modal = new ListEditorModal(this.app, 'edit', list, {
+      onSave: async (input) => {
+        await this.plugin.listStore.update(list.id, input);
+      },
+    });
+    modal.open();
+  }
+
+  private async deleteList(list: List): Promise<void> {
+    const tasksInList = this.plugin.taskStore
+      .getAll()
+      .filter((t) => t.listId === list.id);
+    if (tasksInList.length > 0) {
+      const proceed = window.confirm(
+        `"${list.name}"에 ${tasksInList.length}개 태스크가 있습니다. 삭제하면 태스크가 Inbox로 이동합니다. 계속할까요?`
+      );
+      if (!proceed) return;
+      for (const t of tasksInList) {
+        await this.plugin.taskStore.update(t.id, { listId: 'list_inbox' });
+      }
+    }
+    try {
+      await this.plugin.listStore.remove(list.id);
+      if (this.activeListId === list.id) this.activeListId = null;
+    } catch (err) {
+      new Notice(`리스트 삭제 실패: ${(err as Error).message}`);
+    }
   }
 
   private renderToolbar(root: HTMLElement): void {
     const toolbar = root.createDiv({ cls: 'planit-toolbar' });
+
+    const toggleBtn = toolbar.createEl('button', {
+      cls: 'planit-sidebar-toggle',
+      attr: {
+        'aria-label': this.plugin.settings.sidebarExpanded ? '리스트 접기' : '리스트 펼치기',
+      },
+    });
+    setIcon(toggleBtn, this.plugin.settings.sidebarExpanded ? 'panel-left-close' : 'panel-left');
+    toggleBtn.addEventListener('click', () => this.toggleSidebar());
 
     const nav = toolbar.createDiv({ cls: 'planit-toolbar-nav' });
     const prev = nav.createEl('button', { cls: 'planit-nav-btn', text: '‹' });
@@ -99,7 +233,10 @@ export class PlanitView extends ItemView {
         cell.createDiv({ cls: 'planit-cell-date', text: String(date.getDate()) });
 
         const iso = toISODate(date);
-        const tasks = this.plugin.taskStore.getByDate(iso);
+        const allTasks = this.plugin.taskStore.getByDate(iso);
+        const tasks = this.activeListId === null
+          ? allTasks
+          : allTasks.filter((t) => t.listId === this.activeListId);
         this.renderCellTasks(cell, tasks);
 
         cell.addEventListener('click', (e) => {
@@ -113,10 +250,11 @@ export class PlanitView extends ItemView {
   private renderCellTasks(cell: HTMLElement, tasks: Task[]): void {
     if (tasks.length === 0) return;
     const list = cell.createDiv({ cls: 'planit-cell-tasks' });
-    const visible = tasks.slice(0, CHIPS_PER_CELL);
-    for (const task of visible) {
+    for (const task of tasks) {
       const chip = list.createDiv({ cls: 'planit-chip' });
       if (task.done) chip.addClass('is-done');
+      const chipList = this.plugin.listStore.getById(task.listId);
+      if (chipList) chip.style.borderLeft = `3px solid ${chipList.color}`;
 
       const checkbox = chip.createEl('button', {
         cls: 'planit-chip-check',
@@ -138,17 +276,13 @@ export class PlanitView extends ItemView {
         this.openEditTask(task);
       });
     }
-    const overflow = tasks.length - visible.length;
-    if (overflow > 0) {
-      list.createDiv({ cls: 'planit-chip-overflow', text: `+${overflow}` });
-    }
   }
 
   private openEditTask(task: Task): void {
     const modal = new EditTaskModal(
       this.app,
       task,
-      this.plugin.lists.lists,
+      this.plugin.listStore.getAll(),
       {
         onSave: async (patch) => {
           await this.plugin.taskStore.update(task.id, patch);
@@ -167,7 +301,7 @@ export class PlanitView extends ItemView {
       {
         date,
         listId: this.plugin.settings.defaultListId,
-        lists: this.plugin.lists.lists,
+        lists: this.plugin.listStore.getAll(),
       },
       async (input) => {
         await this.plugin.taskStore.add(input);
