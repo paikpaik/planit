@@ -347,6 +347,101 @@
   text-overflow: ellipsis;
 }
 
+/* ── 뷰 토글 ── */
+
+.planit-view-toggle {
+  display: flex;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.planit-view-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.planit-view-toggle-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-view-toggle-btn.is-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* ── 주 뷰 ── */
+
+.planit-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--background-modifier-border);
+  border: 1px solid var(--background-modifier-border);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.planit-week-col {
+  background: var(--background-primary);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.planit-week-col.is-today .planit-week-col-date {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 999px;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planit-week-col-header {
+  text-align: center;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  flex-shrink: 0;
+}
+
+.planit-week-col-dow {
+  font-size: 0.75em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.planit-week-col-date {
+  font-size: 1em;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.planit-week-col-tasks {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: none;
+  cursor: pointer;
+}
+
+.planit-week-col-tasks::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── 사이드바 스마트 뷰 ── */
 
 .planit-sidebar-icon {

@@ -38,6 +38,11 @@ export function formatDateLabel(iso: string, todayIso: string): string {
   return `${m}월 ${d}일 (${WEEKDAY_KO[dow]})`;
 }
 
+export function getWeekStart(date: Date, weekStart: WeekStart): Date {
+  const diff = (date.getDay() - weekStart + 7) % 7;
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() - diff);
+}
+
 // Returns a 6×7 matrix of Date objects covering the target month.
 // Week starts on Sunday (0) or Monday (1).
 export function getMonthMatrix(year: number, monthIndex: number, weekStart: WeekStart): Date[][] {

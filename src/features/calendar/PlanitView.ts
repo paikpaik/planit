@@ -4,7 +4,7 @@ import { ItemView, Menu, Notice, setIcon } from 'obsidian';
 import type { List, Task } from '../../core/types';
 import { VIEW_TYPE_PLANIT } from '../../core/types';
 import type PlanitPlugin from '../../main';
-import { addMonths, formatDateLabel, getMonthMatrix, getUpcomingDates, isSameDay, toISODate } from '../../utils/date';
+import { addMonths, formatDateLabel, getMonthMatrix, getUpcomingDates, getWeekStart, isSameDay, toISODate } from '../../utils/date';
 import { EditTaskModal } from './EditTaskModal';
 import { ListEditorModal } from './ListEditorModal';
 import { QuickAddModal } from './QuickAddModal';
@@ -22,6 +22,7 @@ const SMART_VIEW_META: { view: SmartView; label: string; icon: string; empty: st
 
 export class PlanitView extends ItemView {
   private cursor: Date = new Date();
+  private viewMode: 'month' | 'week' = 'month';
   private activeListId: string | null = null;
   private smartView: SmartView | null = null;
   private activeTag: string | null = null;
@@ -77,6 +78,8 @@ export class PlanitView extends ItemView {
 
     if (this.smartView !== null) {
       this.renderSmartPanel(main);
+    } else if (this.viewMode === 'week') {
+      this.renderWeekView(main);
     } else {
       const scroll = main.createDiv({ cls: 'planit-scroll' });
       this.renderWeekdayHeader(scroll);
@@ -269,19 +272,40 @@ export class PlanitView extends ItemView {
 
     const nav = toolbar.createDiv({ cls: 'planit-toolbar-nav' });
     const prev = nav.createEl('button', { cls: 'planit-nav-btn', text: '‹' });
-    prev.addEventListener('click', () => this.shiftMonth(-1));
+    prev.addEventListener('click', () =>
+      this.viewMode === 'week' ? this.shiftWeek(-1) : this.shiftMonth(-1)
+    );
 
     const title = nav.createEl('span', {
       cls: 'planit-toolbar-title',
-      text: `${this.cursor.getFullYear()}년 ${this.cursor.getMonth() + 1}월`,
+      text: this.viewMode === 'week' ? this.getWeekLabel() : `${this.cursor.getFullYear()}년 ${this.cursor.getMonth() + 1}월`,
     });
     title.setAttribute('aria-live', 'polite');
 
     const next = nav.createEl('button', { cls: 'planit-nav-btn', text: '›' });
-    next.addEventListener('click', () => this.shiftMonth(1));
+    next.addEventListener('click', () =>
+      this.viewMode === 'week' ? this.shiftWeek(1) : this.shiftMonth(1)
+    );
 
     const today = toolbar.createEl('button', { cls: 'planit-today-btn', text: '오늘' });
     today.addEventListener('click', () => this.goToday());
+
+    const viewToggle = toolbar.createDiv({ cls: 'planit-view-toggle' });
+    const monthBtn = viewToggle.createEl('button', {
+      cls: 'planit-view-toggle-btn',
+      text: '월',
+      attr: { 'aria-label': '월 뷰' },
+    });
+    if (this.viewMode === 'month') monthBtn.addClass('is-active');
+    monthBtn.addEventListener('click', () => this.setViewMode('month'));
+
+    const weekBtn = viewToggle.createEl('button', {
+      cls: 'planit-view-toggle-btn',
+      text: '주',
+      attr: { 'aria-label': '주 뷰' },
+    });
+    if (this.viewMode === 'week') weekBtn.addClass('is-active');
+    weekBtn.addEventListener('click', () => this.setViewMode('week'));
   }
 
   private renderWeekdayHeader(root: HTMLElement): void {
@@ -513,6 +537,97 @@ export class PlanitView extends ItemView {
     });
   }
 
+  private setViewMode(mode: 'month' | 'week'): void {
+    if (this.viewMode === mode) return;
+    if (mode === 'week') {
+      this.cursor = getWeekStart(new Date(), this.plugin.settings.weekStart);
+    } else {
+      this.cursor = new Date(this.cursor.getFullYear(), this.cursor.getMonth(), 1);
+    }
+    this.viewMode = mode;
+    this.render();
+  }
+
+  private shiftWeek(delta: number): void {
+    this.cursor = new Date(
+      this.cursor.getFullYear(),
+      this.cursor.getMonth(),
+      this.cursor.getDate() + delta * 7,
+    );
+    this.render();
+  }
+
+  private getWeekLabel(): string {
+    const first = this.cursor;
+    const last = new Date(first.getFullYear(), first.getMonth(), first.getDate() + 6);
+    const fm = first.getMonth() + 1;
+    const fd = first.getDate();
+    const lm = last.getMonth() + 1;
+    const ld = last.getDate();
+    if (fm === lm) return `${first.getFullYear()}년 ${fm}월 ${fd}일 – ${ld}일`;
+    return `${fm}월 ${fd}일 – ${lm}월 ${ld}일`;
+  }
+
+  private renderWeekView(root: HTMLElement): void {
+    const today = new Date();
+    const weekDates = Array.from({ length: 7 }, (_, i) =>
+      new Date(this.cursor.getFullYear(), this.cursor.getMonth(), this.cursor.getDate() + i)
+    );
+
+    const grid = root.createDiv({ cls: 'planit-week-grid' });
+
+    for (const date of weekDates) {
+      const col = grid.createDiv({ cls: 'planit-week-col' });
+      if (isSameDay(date, today)) col.addClass('is-today');
+
+      const header = col.createDiv({ cls: 'planit-week-col-header' });
+      const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
+      header.createDiv({ cls: 'planit-week-col-dow', text: WEEKDAY_KO[date.getDay()] });
+      header.createDiv({ cls: 'planit-week-col-date', text: String(date.getDate()) });
+
+      const iso = toISODate(date);
+      const allTasks = this.plugin.taskStore.getByDate(iso);
+      const listFiltered = this.activeListId === null
+        ? allTasks
+        : allTasks.filter((t) => t.listId === this.activeListId);
+      const tasks = this.applyTagFilter(listFiltered);
+
+      const taskArea = col.createDiv({ cls: 'planit-week-col-tasks' });
+      for (const task of tasks) {
+        const chip = taskArea.createDiv({ cls: 'planit-chip' });
+        if (task.done) chip.addClass('is-done');
+        const chipList = this.plugin.listStore.getById(task.listId);
+        if (chipList) chip.style.borderLeft = `3px solid ${chipList.color}`;
+
+        const checkbox = chip.createEl('button', {
+          cls: 'planit-chip-check',
+          attr: { 'aria-label': task.done ? '완료 해제' : '완료 처리' },
+        });
+        checkbox.addEventListener('click', (e) => {
+          e.stopPropagation();
+          void this.plugin.taskStore.toggleDone(task.id);
+        });
+
+        if (task.priority !== 'none') {
+          chip.createDiv({ cls: `planit-priority-dot priority-${task.priority}` });
+        }
+
+        const body = chip.createDiv({ cls: 'planit-chip-body' });
+        if (task.start) body.createSpan({ cls: 'planit-chip-time', text: task.start });
+        body.createSpan({ cls: 'planit-chip-title', text: task.title });
+        body.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.openEditTask(task);
+        });
+      }
+
+      taskArea.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('.planit-chip')) return;
+        this.openQuickAdd(iso);
+      });
+    }
+  }
+
   private shiftMonth(delta: number): void {
     this.cursor = addMonths(this.cursor, delta);
     this.render();
@@ -520,7 +635,11 @@ export class PlanitView extends ItemView {
 
   private goToday(): void {
     const today = new Date();
-    this.cursor = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (this.viewMode === 'week') {
+      this.cursor = getWeekStart(today, this.plugin.settings.weekStart);
+    } else {
+      this.cursor = new Date(today.getFullYear(), today.getMonth(), 1);
+    }
     this.render();
   }
 }
