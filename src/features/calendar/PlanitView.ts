@@ -4,7 +4,7 @@ import { ItemView, Menu, Notice, setIcon } from 'obsidian';
 import type { List, Task } from '../../core/types';
 import { VIEW_TYPE_PLANIT } from '../../core/types';
 import type PlanitPlugin from '../../main';
-import { addMonths, getMonthMatrix, isSameDay, toISODate } from '../../utils/date';
+import { addMonths, formatDateLabel, getMonthMatrix, getUpcomingDates, isSameDay, toISODate } from '../../utils/date';
 import { EditTaskModal } from './EditTaskModal';
 import { ListEditorModal } from './ListEditorModal';
 import { QuickAddModal } from './QuickAddModal';
@@ -12,9 +12,19 @@ import { QuickAddModal } from './QuickAddModal';
 const WEEKDAY_LABELS_MON_FIRST = ['월', '화', '수', '목', '금', '토', '일'];
 const WEEKDAY_LABELS_SUN_FIRST = ['일', '월', '화', '수', '목', '금', '토'];
 
+type SmartView = 'today' | 'upcoming' | 'inbox';
+
+const SMART_VIEW_META: { view: SmartView; label: string; icon: string; empty: string }[] = [
+  { view: 'today',    label: '오늘',   icon: 'sun',           empty: '오늘 할 일이 없습니다' },
+  { view: 'upcoming', label: '예정',   icon: 'calendar-days', empty: '예정된 일정이 없습니다' },
+  { view: 'inbox',    label: 'Inbox',  icon: 'inbox',         empty: '받은 편지함이 비어 있습니다' },
+];
+
 export class PlanitView extends ItemView {
   private cursor: Date = new Date();
   private activeListId: string | null = null;
+  private smartView: SmartView | null = null;
+  private activeTag: string | null = null;
   private unsubscribeTasks: (() => void) | null = null;
   private unsubscribeLists: (() => void) | null = null;
 
@@ -65,9 +75,13 @@ export class PlanitView extends ItemView {
     const main = root.createDiv({ cls: 'planit-main' });
     this.renderToolbar(main);
 
-    const scroll = main.createDiv({ cls: 'planit-scroll' });
-    this.renderWeekdayHeader(scroll);
-    this.renderGrid(scroll);
+    if (this.smartView !== null) {
+      this.renderSmartPanel(main);
+    } else {
+      const scroll = main.createDiv({ cls: 'planit-scroll' });
+      this.renderWeekdayHeader(scroll);
+      this.renderGrid(scroll);
+    }
   }
 
   private toggleSidebar(): void {
@@ -78,10 +92,25 @@ export class PlanitView extends ItemView {
 
   private renderSidebar(root: HTMLElement): void {
     const sidebar = root.createDiv({ cls: 'planit-sidebar' });
+
+    for (const meta of SMART_VIEW_META) {
+      const item = sidebar.createDiv({ cls: 'planit-sidebar-item' });
+      if (this.smartView === meta.view) item.addClass('is-active');
+      const iconEl = item.createDiv({ cls: 'planit-sidebar-icon' });
+      setIcon(iconEl, meta.icon);
+      item.createSpan({ cls: 'planit-sidebar-name', text: meta.label });
+      const count = this.getSmartCount(meta.view);
+      if (count > 0) {
+        item.createSpan({ cls: 'planit-sidebar-count', text: String(count) });
+      }
+      item.addEventListener('click', () => this.selectSmartView(meta.view));
+    }
+
+    sidebar.createDiv({ cls: 'planit-sidebar-sep' });
     sidebar.createDiv({ cls: 'planit-sidebar-heading', text: '리스트' });
 
     const allItem = sidebar.createDiv({ cls: 'planit-sidebar-item' });
-    if (this.activeListId === null) allItem.addClass('is-active');
+    if (this.smartView === null && this.activeListId === null) allItem.addClass('is-active');
     allItem.createDiv({ cls: 'planit-sidebar-dot planit-sidebar-dot-all' });
     allItem.createSpan({ cls: 'planit-sidebar-name', text: '전체' });
     allItem.addEventListener('click', () => this.selectList(null));
@@ -95,6 +124,36 @@ export class PlanitView extends ItemView {
     addBtn.createSpan({ cls: 'planit-sidebar-add-icon', text: '+' });
     addBtn.createSpan({ cls: 'planit-sidebar-add-label', text: '새 리스트' });
     addBtn.addEventListener('click', () => this.openCreateList());
+
+    const allTags = this.getAllTags();
+    if (allTags.length > 0) {
+      sidebar.createDiv({ cls: 'planit-sidebar-sep' });
+      sidebar.createDiv({ cls: 'planit-sidebar-heading', text: '태그' });
+      for (const tag of allTags) {
+        const item = sidebar.createDiv({ cls: 'planit-sidebar-item' });
+        if (this.activeTag === tag) item.addClass('is-active');
+        item.createSpan({ cls: 'planit-sidebar-tag-label', text: `#${tag}` });
+        item.addEventListener('click', () => this.selectTag(tag));
+      }
+    }
+  }
+
+  private getAllTags(): string[] {
+    const set = new Set<string>();
+    for (const task of this.plugin.taskStore.getAll()) {
+      for (const tag of task.tags) set.add(tag);
+    }
+    return [...set].sort();
+  }
+
+  private selectTag(tag: string): void {
+    this.activeTag = this.activeTag === tag ? null : tag;
+    this.render();
+  }
+
+  private applyTagFilter(tasks: Task[]): Task[] {
+    if (this.activeTag === null) return tasks;
+    return tasks.filter((t) => t.tags.includes(this.activeTag!));
   }
 
   private renderSidebarItem(sidebar: HTMLElement, list: List): void {
@@ -118,7 +177,14 @@ export class PlanitView extends ItemView {
   }
 
   private selectList(listId: string | null): void {
+    this.smartView = null;
     this.activeListId = listId;
+    this.render();
+  }
+
+  private selectSmartView(view: SmartView): void {
+    this.smartView = view;
+    this.activeListId = null;
     this.render();
   }
 
@@ -195,6 +261,12 @@ export class PlanitView extends ItemView {
     setIcon(toggleBtn, this.plugin.settings.sidebarExpanded ? 'panel-left-close' : 'panel-left');
     toggleBtn.addEventListener('click', () => this.toggleSidebar());
 
+    if (this.smartView !== null) {
+      const meta = SMART_VIEW_META.find((m) => m.view === this.smartView)!;
+      toolbar.createEl('span', { cls: 'planit-toolbar-title', text: meta.label });
+      return;
+    }
+
     const nav = toolbar.createDiv({ cls: 'planit-toolbar-nav' });
     const prev = nav.createEl('button', { cls: 'planit-nav-btn', text: '‹' });
     prev.addEventListener('click', () => this.shiftMonth(-1));
@@ -236,9 +308,10 @@ export class PlanitView extends ItemView {
 
         const iso = toISODate(date);
         const allTasks = this.plugin.taskStore.getByDate(iso);
-        const tasks = this.activeListId === null
+        const listFiltered = this.activeListId === null
           ? allTasks
           : allTasks.filter((t) => t.listId === this.activeListId);
+        const tasks = this.applyTagFilter(listFiltered);
         this.renderCellTasks(cell, tasks);
 
         cell.addEventListener('click', (e) => {
@@ -350,6 +423,94 @@ export class PlanitView extends ItemView {
       }
     );
     modal.open();
+  }
+
+  private getSmartTasksFor(view: SmartView): Task[] {
+    const todayIso = toISODate(new Date());
+    const all = this.plugin.taskStore.getAll();
+    if (view === 'today') return all.filter((t) => t.date === todayIso);
+    if (view === 'inbox') return all.filter((t) => t.date === null);
+    const upcoming = getUpcomingDates(todayIso, 7);
+    return all.filter((t) => t.date !== null && upcoming.includes(t.date));
+  }
+
+  private getSmartCount(view: SmartView): number {
+    return this.getSmartTasksFor(view).filter((t) => !t.done).length;
+  }
+
+  private renderSmartPanel(root: HTMLElement): void {
+    const panel = root.createDiv({ cls: 'planit-smart-panel planit-scroll' });
+    const view = this.smartView!;
+    const tasks = this.applyTagFilter(this.getSmartTasksFor(view));
+
+    if (tasks.length === 0) {
+      const meta = SMART_VIEW_META.find((m) => m.view === view)!;
+      panel.createDiv({ cls: 'planit-smart-empty', text: meta.empty });
+    } else if (view === 'upcoming') {
+      const todayIso = toISODate(new Date());
+      const byDate = new Map<string, Task[]>();
+      for (const t of tasks) {
+        const key = t.date!;
+        if (!byDate.has(key)) byDate.set(key, []);
+        byDate.get(key)!.push(t);
+      }
+      const sorted = [...byDate.entries()].sort(([a], [b]) => a.localeCompare(b));
+      for (const [dateIso, group] of sorted) {
+        panel.createDiv({ cls: 'planit-smart-group-header', text: formatDateLabel(dateIso, todayIso) });
+        for (const task of group) this.renderSmartRow(panel, task);
+      }
+    } else {
+      for (const task of tasks) this.renderSmartRow(panel, task);
+    }
+
+    if (view === 'today' || view === 'inbox') {
+      const addBtn = panel.createDiv({ cls: 'planit-smart-add' });
+      setIcon(addBtn.createDiv({ cls: 'planit-smart-add-icon' }), 'plus');
+      addBtn.createSpan({ text: view === 'inbox' ? 'Inbox에 추가' : '오늘에 추가' });
+      addBtn.addEventListener('click', () => {
+        const date = view === 'today' ? toISODate(new Date()) : null;
+        new QuickAddModal(
+          this.app,
+          { date, listId: this.plugin.settings.defaultListId, lists: this.plugin.listStore.getAll() },
+          async (input) => { await this.plugin.taskStore.add(input); }
+        ).open();
+      });
+    }
+  }
+
+  private renderSmartRow(container: HTMLElement, task: Task): void {
+    const row = container.createDiv({ cls: 'planit-smart-row' });
+    if (task.done) row.addClass('is-done');
+
+    const checkbox = row.createEl('button', {
+      cls: 'planit-chip-check',
+      attr: { 'aria-label': task.done ? '완료 해제' : '완료 처리' },
+    });
+    checkbox.addEventListener('click', (e) => {
+      e.stopPropagation();
+      void this.plugin.taskStore.toggleDone(task.id);
+    });
+
+    if (task.priority !== 'none') {
+      row.createDiv({ cls: `planit-priority-dot priority-${task.priority}` });
+    }
+
+    const body = row.createDiv({ cls: 'planit-smart-row-body' });
+    body.createSpan({ cls: 'planit-smart-row-title', text: task.title });
+    if (task.start) {
+      body.createSpan({ cls: 'planit-smart-row-time', text: task.start });
+    }
+
+    const listInfo = this.plugin.listStore.getById(task.listId);
+    if (listInfo) {
+      const dot = row.createDiv({ cls: 'planit-smart-row-list-dot' });
+      dot.style.background = listInfo.color;
+    }
+
+    row.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('.planit-chip-check')) return;
+      this.openEditTask(task);
+    });
   }
 
   private shiftMonth(delta: number): void {

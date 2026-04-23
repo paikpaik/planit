@@ -1,5 +1,5 @@
 import type { App } from 'obsidian';
-import { Modal, Notice } from 'obsidian';
+import { Modal, Notice, setIcon } from 'obsidian';
 
 import type { List, Priority, Task } from '../../core/types';
 import { buildTaskPatch } from './editTask';
@@ -96,6 +96,49 @@ export class EditTaskModal extends Modal {
       priorityButtons.set(p, btn);
     }
 
+    const tagRow = contentEl.createDiv({ cls: 'planit-edit-task-row planit-edit-task-row-wrap' });
+    tagRow.createEl('label', { text: '태그', cls: 'planit-edit-task-label' });
+    const tagArea = tagRow.createDiv({ cls: 'planit-tag-area' });
+    let currentTags: string[] = [...this.task.tags];
+
+    const renderTagChips = (): void => {
+      tagArea.empty();
+      for (const tag of currentTags) {
+        const chip = tagArea.createSpan({ cls: 'planit-tag-chip' });
+        chip.createSpan({ text: `#${tag}` });
+        const removeBtn = chip.createEl('button', {
+          cls: 'planit-tag-chip-remove',
+          attr: { 'aria-label': `#${tag} 삭제` },
+        });
+        setIcon(removeBtn, 'x');
+        removeBtn.addEventListener('click', () => {
+          currentTags = currentTags.filter((t) => t !== tag);
+          renderTagChips();
+        });
+      }
+      const input = tagArea.createEl('input', {
+        cls: 'planit-tag-input',
+        attr: { placeholder: currentTags.length === 0 ? '태그 입력 후 Enter' : '' },
+      }) as HTMLInputElement;
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          const val = input.value.replace(/^#/, '').replace(/,/g, '').trim();
+          if (val && !currentTags.includes(val)) {
+            currentTags = [...currentTags, val];
+            renderTagChips();
+          } else {
+            input.value = '';
+          }
+        }
+        if (e.key === 'Backspace' && input.value === '' && currentTags.length > 0) {
+          currentTags = currentTags.slice(0, -1);
+          renderTagChips();
+        }
+      });
+    };
+    renderTagChips();
+
     contentEl.createEl('label', {
       text: '설명',
       cls: 'planit-edit-task-label planit-edit-task-label-block',
@@ -146,6 +189,7 @@ export class EditTaskModal extends Modal {
         listId: listSelect.value,
         priority: selectedPriority,
         description: descInput.value,
+        tags: currentTags,
       });
 
       submitting = true;

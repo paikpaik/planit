@@ -53,6 +53,73 @@
   color: var(--text-error);
 }
 
+.planit-edit-task-row-wrap {
+  align-items: flex-start;
+}
+
+.planit-tag-area {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  min-height: 30px;
+  padding: 3px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: text;
+}
+
+.planit-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--background-modifier-hover);
+  color: var(--interactive-accent);
+  border: 1px solid var(--interactive-accent);
+  font-size: 0.8em;
+  padding: 2px 4px 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.planit-tag-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--interactive-accent);
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.planit-tag-chip-remove:hover {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  opacity: 1;
+}
+
+.planit-tag-chip-remove svg {
+  width: 10px;
+  height: 10px;
+}
+
+.planit-tag-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85em;
+  min-width: 80px;
+  flex: 1;
+  padding: 0;
+}
+
 .planit-priority-btns {
   display: flex;
   gap: 6px;

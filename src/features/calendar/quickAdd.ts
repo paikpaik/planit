@@ -24,7 +24,7 @@ export function parseTimeInput(raw: string): ParsedTime {
 
 export interface QuickAddParams {
   title: string;
-  date: string;
+  date: string | null;
   start: string | null;
   end: string | null;
   listId: string;

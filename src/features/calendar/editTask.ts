@@ -9,6 +9,7 @@ export interface EditTaskFormValues {
   listId: string;
   priority: Priority;
   description: string;
+  tags: string[];
 }
 
 export function buildTaskPatch(values: EditTaskFormValues): Partial<TaskInput> {
@@ -20,5 +21,6 @@ export function buildTaskPatch(values: EditTaskFormValues): Partial<TaskInput> {
     end: values.end,
     priority: values.priority,
     description: values.description,
+    tags: values.tags,
   };
 }

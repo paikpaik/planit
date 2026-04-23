@@ -19,6 +19,25 @@ export function toISODate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
+
+export function getUpcomingDates(fromIso: string, days: number): string[] {
+  const [y, m, d] = fromIso.split('-').map(Number);
+  return Array.from({ length: days }, (_, i) => {
+    return toISODate(new Date(y, m - 1, d + i + 1));
+  });
+}
+
+export function formatDateLabel(iso: string, todayIso: string): string {
+  const [ty, tm, td] = todayIso.split('-').map(Number);
+  const tomorrowIso = toISODate(new Date(ty, tm - 1, td + 1));
+  if (iso === todayIso) return '오늘';
+  if (iso === tomorrowIso) return '내일';
+  const [y, m, d] = iso.split('-').map(Number);
+  const dow = new Date(y, m - 1, d).getDay();
+  return `${m}월 ${d}일 (${WEEKDAY_KO[dow]})`;
+}
+
 // Returns a 6×7 matrix of Date objects covering the target month.
 // Week starts on Sunday (0) or Monday (1).
 export function getMonthMatrix(year: number, monthIndex: number, weekStart: WeekStart): Date[][] {

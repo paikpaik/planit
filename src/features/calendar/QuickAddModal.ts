@@ -6,7 +6,7 @@ import type { List } from '../../core/types';
 import { buildTaskInput, parseTimeInput } from './quickAdd';
 
 export interface QuickAddDefaults {
-  date: string;
+  date: string | null;
   listId: string;
   lists: List[];
 }
@@ -27,7 +27,7 @@ export class QuickAddModal extends Modal {
 
     contentEl.createEl('h3', { text: '태스크 추가', cls: 'planit-quick-add-title' });
     contentEl.createEl('p', {
-      text: this.defaults.date,
+      text: this.defaults.date ?? '날짜 없음 (Inbox)',
       cls: 'planit-quick-add-date',
     });
 

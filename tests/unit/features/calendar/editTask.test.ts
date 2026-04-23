@@ -10,6 +10,7 @@ describe('buildTaskPatch', () => {
       listId: 'list_work',
       priority: 'high',
       description: '회의실 A',
+      tags: ['meeting'],
     });
 
     expect(patch).toEqual({
@@ -20,6 +21,7 @@ describe('buildTaskPatch', () => {
       end: '11:00',
       priority: 'high',
       description: '회의실 A',
+      tags: ['meeting'],
     });
   });
 
@@ -32,6 +34,7 @@ describe('buildTaskPatch', () => {
       listId: 'list_inbox',
       priority: 'none',
       description: '',
+      tags: [],
     });
     expect(patch.date).toBeNull();
     expect(patch.start).toBeNull();
