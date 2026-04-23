@@ -1,5 +1,7 @@
 export const VIEW_TYPE_PLANIT = 'planit-view';
 
+export type WeekStart = 0 | 1;
+
 export type Priority = 'none' | 'low' | 'med' | 'high';
 
 export interface Subtask {
@@ -49,12 +51,14 @@ export interface ListsFile {
 
 export interface PlanitSettings {
   defaultListId: string;
+  weekStart: WeekStart;
   locale: 'ko' | 'en';
   sidebarExpanded: boolean;
 }
 
 export const DEFAULT_SETTINGS: PlanitSettings = {
   defaultListId: 'list_inbox',
+  weekStart: 1,
   locale: 'ko',
   sidebarExpanded: false,
 };

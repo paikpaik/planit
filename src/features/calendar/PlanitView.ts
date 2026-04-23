@@ -4,7 +4,6 @@ import { ItemView, Menu, Notice, setIcon } from 'obsidian';
 import type { List, Task } from '../../core/types';
 import { VIEW_TYPE_PLANIT } from '../../core/types';
 import type PlanitPlugin from '../../main';
-import type { WeekStart } from '../../utils/date';
 import { addMonths, getMonthMatrix, isSameDay, toISODate } from '../../utils/date';
 import { EditTaskModal } from './EditTaskModal';
 import { ListEditorModal } from './ListEditorModal';
@@ -15,7 +14,6 @@ const WEEKDAY_LABELS_SUN_FIRST = ['일', '월', '화', '수', '목', '금', '토
 
 export class PlanitView extends ItemView {
   private cursor: Date = new Date();
-  private weekStart: WeekStart = 1;
   private activeListId: string | null = null;
   private unsubscribeTasks: (() => void) | null = null;
   private unsubscribeLists: (() => void) | null = null;
@@ -49,6 +47,10 @@ export class PlanitView extends ItemView {
     this.unsubscribeLists?.();
     this.unsubscribeTasks = null;
     this.unsubscribeLists = null;
+  }
+
+  refresh(): void {
+    this.render();
   }
 
   private render(): void {
@@ -212,7 +214,7 @@ export class PlanitView extends ItemView {
 
   private renderWeekdayHeader(root: HTMLElement): void {
     const header = root.createDiv({ cls: 'planit-weekday-header' });
-    const labels = this.weekStart === 1 ? WEEKDAY_LABELS_MON_FIRST : WEEKDAY_LABELS_SUN_FIRST;
+    const labels = this.plugin.settings.weekStart === 1 ? WEEKDAY_LABELS_MON_FIRST : WEEKDAY_LABELS_SUN_FIRST;
     for (const label of labels) {
       header.createDiv({ cls: 'planit-weekday', text: label });
     }
@@ -220,7 +222,7 @@ export class PlanitView extends ItemView {
 
   private renderGrid(root: HTMLElement): void {
     const grid = root.createDiv({ cls: 'planit-grid' });
-    const matrix = getMonthMatrix(this.cursor.getFullYear(), this.cursor.getMonth(), this.weekStart);
+    const matrix = getMonthMatrix(this.cursor.getFullYear(), this.cursor.getMonth(), this.plugin.settings.weekStart);
     const today = new Date();
     const currentMonth = this.cursor.getMonth();
 
@@ -243,8 +245,32 @@ export class PlanitView extends ItemView {
           if ((e.target as HTMLElement).closest('.planit-chip')) return;
           this.openQuickAdd(iso);
         });
+
+        this.wireCellDrop(cell, iso);
       }
     }
+  }
+
+  private wireCellDrop(cell: HTMLElement, iso: string): void {
+    cell.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      cell.addClass('is-drop-target');
+    });
+    cell.addEventListener('dragleave', (e) => {
+      // dragleave fires when entering child elements too; only clear when leaving the cell
+      if (e.relatedTarget && cell.contains(e.relatedTarget as Node)) return;
+      cell.removeClass('is-drop-target');
+    });
+    cell.addEventListener('drop', (e) => {
+      e.preventDefault();
+      cell.removeClass('is-drop-target');
+      const taskId = e.dataTransfer?.getData('text/plain');
+      if (!taskId) return;
+      const task = this.plugin.taskStore.getAll().find((t) => t.id === taskId);
+      if (!task || task.date === iso) return;
+      void this.plugin.taskStore.update(taskId, { date: iso });
+    });
   }
 
   private renderCellTasks(cell: HTMLElement, tasks: Task[]): void {
@@ -252,9 +278,21 @@ export class PlanitView extends ItemView {
     const list = cell.createDiv({ cls: 'planit-cell-tasks' });
     for (const task of tasks) {
       const chip = list.createDiv({ cls: 'planit-chip' });
+      chip.draggable = true;
       if (task.done) chip.addClass('is-done');
       const chipList = this.plugin.listStore.getById(task.listId);
       if (chipList) chip.style.borderLeft = `3px solid ${chipList.color}`;
+
+      chip.addEventListener('dragstart', (e) => {
+        if (e.dataTransfer) {
+          e.dataTransfer.setData('text/plain', task.id);
+          e.dataTransfer.effectAllowed = 'move';
+        }
+        chip.addClass('is-dragging');
+      });
+      chip.addEventListener('dragend', () => {
+        chip.removeClass('is-dragging');
+      });
 
       const checkbox = chip.createEl('button', {
         cls: 'planit-chip-check',

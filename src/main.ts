@@ -6,6 +6,7 @@ import { ListStore, TaskStore } from './core/store';
 import type { PlanitSettings } from './core/types';
 import { DEFAULT_SETTINGS, VIEW_TYPE_PLANIT } from './core/types';
 import { PlanitView } from './features/calendar/PlanitView';
+import { PlanitSettingTab } from './features/settings/PlanitSettingTab';
 import { toISODate } from './utils/date';
 
 const TASKS_FILE_PATH = '.planit/tasks.json';
@@ -30,6 +31,7 @@ export default class PlanitPlugin extends Plugin {
     await this.listStore.init();
 
     this.registerView(VIEW_TYPE_PLANIT, (leaf) => new PlanitView(leaf, this));
+    this.addSettingTab(new PlanitSettingTab(this.app, this));
 
     this.addRibbonIcon('calendar', 'Open Planit', () => {
       this.activateView();
@@ -116,6 +118,12 @@ export default class PlanitPlugin extends Plugin {
     }
 
     workspace.revealLeaf(leaf);
+  }
+
+  refreshViews(): void {
+    this.app.workspace.getLeavesOfType(VIEW_TYPE_PLANIT).forEach((leaf) => {
+      (leaf.view as PlanitView).refresh();
+    });
   }
 
   async loadSettings(): Promise<void> {
