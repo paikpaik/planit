@@ -52,3 +52,29 @@
 .planit-edit-task-delete {
   color: var(--text-error);
 }
+
+.planit-priority-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.planit-priority-btn {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--background-modifier-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: border-color 0.1s, color 0.1s, background 0.1s;
+}
+
+.planit-priority-btn.priority-high.is-active { border-color: #FF3B30; color: #FF3B30; background: rgba(255,59,48,0.08); }
+.planit-priority-btn.priority-med.is-active  { border-color: #FF9500; color: #FF9500; background: rgba(255,149,0,0.08); }
+.planit-priority-btn.priority-low.is-active  { border-color: #007AFF; color: #007AFF; background: rgba(0,122,255,0.08); }
+.planit-priority-btn.priority-none.is-active { border-color: var(--text-muted); color: var(--text-normal); background: var(--background-modifier-hover); }
+
+.planit-priority-btn:not(.is-active):hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}

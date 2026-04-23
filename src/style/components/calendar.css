@@ -347,3 +347,14 @@
   text-overflow: ellipsis;
 }
 
+.planit-priority-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.planit-priority-dot.priority-high { background: #FF3B30; }
+.planit-priority-dot.priority-med  { background: #FF9500; }
+.planit-priority-dot.priority-low  { background: #007AFF; }
+

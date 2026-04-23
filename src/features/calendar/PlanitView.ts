@@ -303,6 +303,10 @@ export class PlanitView extends ItemView {
         void this.plugin.taskStore.toggleDone(task.id);
       });
 
+      if (task.priority !== 'none') {
+        chip.createDiv({ cls: `planit-priority-dot priority-${task.priority}` });
+      }
+
       const body = chip.createDiv({ cls: 'planit-chip-body' });
       if (task.start) {
         body.createSpan({ cls: 'planit-chip-time', text: task.start });

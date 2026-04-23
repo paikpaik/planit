@@ -80,15 +80,20 @@ export class EditTaskModal extends Modal {
 
     const priorityRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
     priorityRow.createEl('label', { text: '우선순위', cls: 'planit-edit-task-label' });
-    const prioritySelect = priorityRow.createEl('select', {
-      cls: 'planit-edit-task-select',
-    }) as HTMLSelectElement;
-    for (const p of ['none', 'low', 'med', 'high'] as Priority[]) {
-      const opt = prioritySelect.createEl('option', {
-        value: p,
+    const priorityBtns = priorityRow.createDiv({ cls: 'planit-priority-btns' });
+    let selectedPriority: Priority = this.task.priority;
+    const priorityButtons = new Map<Priority, HTMLButtonElement>();
+    for (const p of ['high', 'med', 'low', 'none'] as Priority[]) {
+      const btn = priorityBtns.createEl('button', {
+        cls: `planit-priority-btn priority-${p}`,
         text: PRIORITY_LABELS[p],
-      }) as HTMLOptionElement;
-      if (p === this.task.priority) opt.selected = true;
+      });
+      if (p === selectedPriority) btn.addClass('is-active');
+      btn.addEventListener('click', () => {
+        selectedPriority = p;
+        priorityButtons.forEach((b, key) => b.toggleClass('is-active', key === p));
+      });
+      priorityButtons.set(p, btn);
     }
 
     contentEl.createEl('label', {
@@ -139,7 +144,7 @@ export class EditTaskModal extends Modal {
         start: startParsed.kind === 'ok' ? startParsed.value : null,
         end: endParsed.kind === 'ok' ? endParsed.value : null,
         listId: listSelect.value,
-        priority: prioritySelect.value as Priority,
+        priority: selectedPriority,
         description: descInput.value,
       });
 
