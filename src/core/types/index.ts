@@ -28,6 +28,7 @@ export interface Task {
   subtasks: Subtask[];
 
   noteRef: string | null;
+  recurrence: RecurrenceRule | null;
 
   createdAt: number;
   updatedAt: number;
@@ -48,6 +49,12 @@ export interface TasksFile {
 export interface ListsFile {
   lists: List[];
 }
+
+export type RecurrenceRule =
+  | { type: 'daily' }
+  | { type: 'weekly';  days: number[] }        // days: 0=일 ~ 6=토, 복수 선택
+  | { type: 'monthly'; day: number }           // day: 1~31
+  | { type: 'nweekly'; n: number; day: number }; // 매 n주마다 특정 요일
 
 export interface PlanitSettings {
   defaultListId: string;

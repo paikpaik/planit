@@ -44,5 +44,6 @@ export function buildTaskInput(params: QuickAddParams): TaskInput {
     description: '',
     subtasks: [],
     noteRef: null,
+    recurrence: null,
   };
 }

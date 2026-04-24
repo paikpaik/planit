@@ -1,7 +1,8 @@
 import type { App } from 'obsidian';
 import { Modal, Notice, setIcon } from 'obsidian';
 
-import type { List, Priority, Task } from '../../core/types';
+import type { List, Priority, RecurrenceRule, Task } from '../../core/types';
+import { DAY_LABELS } from '../../utils/recurrence';
 import { buildTaskPatch } from './editTask';
 import { parseTimeInput } from './quickAdd';
 
@@ -139,6 +140,107 @@ export class EditTaskModal extends Modal {
     };
     renderTagChips();
 
+    // ── 반복 설정 ──
+    const recRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
+    recRow.createEl('label', { text: '반복', cls: 'planit-edit-task-label' });
+    const recWrapper = recRow.createDiv({ cls: 'planit-recurrence' });
+
+    let currentRecurrence: RecurrenceRule | null = this.task.recurrence;
+
+    const typeSelect = recWrapper.createEl('select', {
+      cls: 'planit-edit-task-select planit-recurrence-type',
+    }) as HTMLSelectElement;
+    for (const [val, label] of [
+      ['none', '없음'], ['daily', '매일'], ['weekly', '매주'],
+      ['monthly', '매월'], ['nweekly', 'N주마다'],
+    ] as [string, string][]) {
+      typeSelect.createEl('option', { value: val, text: label });
+    }
+    typeSelect.value = currentRecurrence?.type ?? 'none';
+
+    const subEl = recWrapper.createDiv({ cls: 'planit-recurrence-sub' });
+
+    const renderSub = (): void => {
+      subEl.empty();
+      const type = typeSelect.value;
+
+      if (type === 'none' || type === 'daily') {
+        currentRecurrence = type === 'none' ? null : { type: 'daily' };
+        return;
+      }
+
+      if (type === 'monthly') {
+        const existing = currentRecurrence?.type === 'monthly' ? currentRecurrence.day : 1;
+        const numInput = subEl.createEl('input', {
+          cls: 'planit-recurrence-num',
+          attr: { type: 'number', min: '1', max: '31', value: String(existing) },
+        }) as HTMLInputElement;
+        subEl.createSpan({ cls: 'planit-recurrence-unit', text: '일' });
+        currentRecurrence = { type: 'monthly', day: existing };
+        numInput.addEventListener('input', () => {
+          const v = Math.min(31, Math.max(1, Number(numInput.value) || 1));
+          currentRecurrence = { type: 'monthly', day: v };
+        });
+        return;
+      }
+
+      // weekly / nweekly — 요일 버튼 공통
+      if (type === 'nweekly') {
+        const existingN = currentRecurrence?.type === 'nweekly' ? currentRecurrence.n : 2;
+        const nInput = subEl.createEl('input', {
+          cls: 'planit-recurrence-num',
+          attr: { type: 'number', min: '1', max: '52', value: String(existingN) },
+        }) as HTMLInputElement;
+        subEl.createSpan({ cls: 'planit-recurrence-unit', text: '주마다' });
+        currentRecurrence = {
+          type: 'nweekly',
+          n: existingN,
+          day: currentRecurrence?.type === 'nweekly' ? currentRecurrence.day : 1,
+        };
+        nInput.addEventListener('input', () => {
+          const n = Math.min(52, Math.max(1, Number(nInput.value) || 1));
+          currentRecurrence = { ...(currentRecurrence as { type: 'nweekly'; n: number; day: number }), n };
+        });
+      } else {
+        // weekly
+        currentRecurrence ??= { type: 'weekly', days: [1] };
+        if (currentRecurrence.type !== 'weekly') currentRecurrence = { type: 'weekly', days: [1] };
+      }
+
+      const multiSelect = type === 'weekly';
+      const initDays = new Set<number>(
+        type === 'weekly'
+          ? (currentRecurrence?.type === 'weekly' ? currentRecurrence.days : [1])
+          : [(currentRecurrence as { type: 'nweekly'; n: number; day: number }).day],
+      );
+
+      const dayBtns = subEl.createDiv({ cls: 'planit-recurrence-days' });
+      DAY_LABELS.forEach((label, i) => {
+        const btn = dayBtns.createEl('button', { cls: 'planit-recurrence-day-btn', text: label });
+        if (initDays.has(i)) btn.addClass('is-active');
+        btn.addEventListener('click', () => {
+          if (multiSelect) {
+            if (initDays.has(i) && initDays.size > 1) initDays.delete(i);
+            else initDays.add(i);
+            currentRecurrence = { type: 'weekly', days: [...initDays].sort((a, b) => a - b) };
+          } else {
+            initDays.clear();
+            initDays.add(i);
+            currentRecurrence = {
+              ...(currentRecurrence as { type: 'nweekly'; n: number; day: number }),
+              day: i,
+            };
+          }
+          dayBtns.querySelectorAll('.planit-recurrence-day-btn').forEach((b, idx) => {
+            b.toggleClass('is-active', initDays.has(idx));
+          });
+        });
+      });
+    };
+
+    typeSelect.addEventListener('change', renderSub);
+    renderSub();
+
     contentEl.createEl('label', {
       text: '설명',
       cls: 'planit-edit-task-label planit-edit-task-label-block',
@@ -190,6 +292,7 @@ export class EditTaskModal extends Modal {
         priority: selectedPriority,
         description: descInput.value,
         tags: currentTags,
+        recurrence: currentRecurrence,
       });
 
       submitting = true;

@@ -1,5 +1,5 @@
 import type { TaskInput } from '../../core/store';
-import type { Priority } from '../../core/types';
+import type { Priority, RecurrenceRule } from '../../core/types';
 
 export interface EditTaskFormValues {
   title: string;
@@ -10,6 +10,7 @@ export interface EditTaskFormValues {
   priority: Priority;
   description: string;
   tags: string[];
+  recurrence: RecurrenceRule | null;
 }
 
 export function buildTaskPatch(values: EditTaskFormValues): Partial<TaskInput> {
@@ -22,5 +23,6 @@ export function buildTaskPatch(values: EditTaskFormValues): Partial<TaskInput> {
     priority: values.priority,
     description: values.description,
     tags: values.tags,
+    recurrence: values.recurrence,
   };
 }

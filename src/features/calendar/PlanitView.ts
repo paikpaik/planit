@@ -8,6 +8,7 @@ import { addMonths, formatDateLabel, getMonthMatrix, getUpcomingDates, getWeekSt
 import { EditTaskModal } from './EditTaskModal';
 import { ListEditorModal } from './ListEditorModal';
 import { QuickAddModal } from './QuickAddModal';
+import { SearchModal } from './SearchModal';
 
 const WEEKDAY_LABELS_MON_FIRST = ['월', '화', '수', '목', '금', '토', '일'];
 const WEEKDAY_LABELS_SUN_FIRST = ['일', '월', '화', '수', '목', '금', '토'];
@@ -290,6 +291,13 @@ export class PlanitView extends ItemView {
     const today = toolbar.createEl('button', { cls: 'planit-today-btn', text: '오늘' });
     today.addEventListener('click', () => this.goToday());
 
+    const searchBtn = toolbar.createEl('button', {
+      cls: 'planit-search-btn',
+      attr: { 'aria-label': '태스크 검색' },
+    });
+    setIcon(searchBtn, 'search');
+    searchBtn.addEventListener('click', () => this.openSearch());
+
     const viewToggle = toolbar.createDiv({ cls: 'planit-view-toggle' });
     const monthBtn = viewToggle.createEl('button', {
       cls: 'planit-view-toggle-btn',
@@ -409,12 +417,37 @@ export class PlanitView extends ItemView {
         body.createSpan({ cls: 'planit-chip-time', text: task.start });
       }
       body.createSpan({ cls: 'planit-chip-title', text: task.title });
+      if (task.recurrence !== null) {
+        const recIcon = body.createSpan({ cls: 'planit-chip-recurrence' });
+        setIcon(recIcon, 'repeat-2');
+      }
 
       body.addEventListener('click', (e) => {
         e.stopPropagation();
         this.openEditTask(task);
       });
     }
+  }
+
+  openSearch(): void {
+    const modal = new SearchModal(
+      this.app,
+      this.plugin.taskStore.getAll(),
+      this.plugin.listStore.getAll(),
+      (task) => this.openTask(task),
+    );
+    modal.open();
+  }
+
+  openTask(task: Task): void {
+    this.smartView = null;
+    if (task.date) {
+      const [y, m] = task.date.split('-').map(Number);
+      this.cursor = new Date(y, m - 1, 1);
+      this.viewMode = 'month';
+    }
+    this.render();
+    this.openEditTask(task);
   }
 
   private openEditTask(task: Task): void {
@@ -524,6 +557,10 @@ export class PlanitView extends ItemView {
     if (task.start) {
       body.createSpan({ cls: 'planit-smart-row-time', text: task.start });
     }
+    if (task.recurrence !== null) {
+      const recIcon = body.createSpan({ cls: 'planit-chip-recurrence' });
+      setIcon(recIcon, 'repeat-2');
+    }
 
     const listInfo = this.plugin.listStore.getById(task.listId);
     if (listInfo) {
@@ -615,6 +652,10 @@ export class PlanitView extends ItemView {
         const body = chip.createDiv({ cls: 'planit-chip-body' });
         if (task.start) body.createSpan({ cls: 'planit-chip-time', text: task.start });
         body.createSpan({ cls: 'planit-chip-title', text: task.title });
+        if (task.recurrence !== null) {
+          const recIcon = body.createSpan({ cls: 'planit-chip-recurrence' });
+          setIcon(recIcon, 'repeat-2');
+        }
         body.addEventListener('click', (e) => {
           e.stopPropagation();
           this.openEditTask(task);

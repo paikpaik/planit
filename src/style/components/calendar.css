@@ -347,6 +347,19 @@
   text-overflow: ellipsis;
 }
 
+.planit-chip-recurrence {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.planit-chip-recurrence svg {
+  width: 10px;
+  height: 10px;
+}
+
 /* ── 뷰 토글 ── */
 
 .planit-view-toggle {

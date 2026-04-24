@@ -11,6 +11,7 @@ describe('buildTaskPatch', () => {
       priority: 'high',
       description: '회의실 A',
       tags: ['meeting'],
+      recurrence: { type: 'weekly', days: [1] },
     });
 
     expect(patch).toEqual({
@@ -22,6 +23,7 @@ describe('buildTaskPatch', () => {
       priority: 'high',
       description: '회의실 A',
       tags: ['meeting'],
+      recurrence: { type: 'weekly', days: [1] },
     });
   });
 
@@ -35,6 +37,7 @@ describe('buildTaskPatch', () => {
       priority: 'none',
       description: '',
       tags: [],
+      recurrence: null,
     });
     expect(patch.date).toBeNull();
     expect(patch.start).toBeNull();

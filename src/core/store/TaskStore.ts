@@ -1,4 +1,5 @@
 import { generateId } from '../../utils/id';
+import { calcNextDate } from '../../utils/recurrence';
 import type { Task, TasksFile } from '../types';
 import { SCHEMA_VERSION } from '../types';
 
@@ -19,7 +20,8 @@ export class TaskStore {
 
   async init(): Promise<void> {
     const file = await this.persistence.loadTasks();
-    this.tasks = file.tasks;
+    // recurrence 필드가 없는 구버전 태스크를 null로 정규화
+    this.tasks = file.tasks.map((t) => ({ ...t, recurrence: t.recurrence ?? null }));
   }
 
   getAll(): Task[] {
@@ -78,13 +80,31 @@ export class TaskStore {
     if (index === -1) return;
     const current = this.tasks[index];
     const nowTs = Date.now();
+    const markingDone = !current.done;
     const merged: Task = {
       ...current,
-      done: !current.done,
-      completedAt: current.done ? null : nowTs,
+      done: markingDone,
+      completedAt: markingDone ? nowTs : null,
       updatedAt: nowTs,
     };
     this.tasks = [...this.tasks.slice(0, index), merged, ...this.tasks.slice(index + 1)];
+
+    // 반복 태스크 완료 시 다음 occurrence 자동 생성
+    if (markingDone && current.recurrence !== null && current.date !== null) {
+      const nextDate = calcNextDate(current.date, current.recurrence);
+      const next: Task = {
+        ...current,
+        id: generateId('tsk'),
+        date: nextDate,
+        done: false,
+        completedAt: null,
+        subtasks: current.subtasks.map((s) => ({ ...s, done: false })),
+        createdAt: nowTs,
+        updatedAt: nowTs,
+      };
+      this.tasks = [...this.tasks, next];
+    }
+
     await this.persist();
     this.notify();
   }

@@ -50,6 +50,7 @@ describe('buildTaskInput', () => {
       description: '',
       subtasks: [],
       noteRef: null,
+      recurrence: null,
     });
   });
 

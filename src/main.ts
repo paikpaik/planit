@@ -58,6 +58,22 @@ export default class PlanitPlugin extends Plugin {
     );
 
     this.addCommand({
+      id: 'search-tasks',
+      name: 'Search tasks',
+      callback: () => {
+        const leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_PLANIT)[0];
+        if (leaf) {
+          (leaf.view as PlanitView).openSearch();
+        } else {
+          void this.activateView().then(() => {
+            const l = this.app.workspace.getLeavesOfType(VIEW_TYPE_PLANIT)[0];
+            if (l) (l.view as PlanitView).openSearch();
+          });
+        }
+      },
+    });
+
+    this.addCommand({
       id: 'seed-sample-task-today',
       name: 'Seed sample task on today',
       callback: async () => {
@@ -74,6 +90,7 @@ export default class PlanitPlugin extends Plugin {
           description: '',
           subtasks: [],
           noteRef: null,
+          recurrence: null,
         });
         new Notice('샘플 태스크를 추가했습니다');
       },

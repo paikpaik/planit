@@ -53,6 +53,66 @@
   color: var(--text-error);
 }
 
+.planit-recurrence {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.planit-recurrence-type {
+  flex: 1;
+}
+
+.planit-recurrence-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.planit-recurrence-num {
+  width: 4em;
+  padding: 3px 6px;
+  text-align: center;
+}
+
+.planit-recurrence-unit {
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.planit-recurrence-days {
+  display: flex;
+  gap: 4px;
+}
+
+.planit-recurrence-day-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--background-modifier-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.planit-recurrence-day-btn:hover {
+  border-color: var(--interactive-accent);
+  color: var(--interactive-accent);
+}
+
+.planit-recurrence-day-btn.is-active {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
 .planit-edit-task-row-wrap {
   align-items: flex-start;
 }

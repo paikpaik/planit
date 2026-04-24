@@ -1,5 +1,6 @@
+import type { TaskInput } from '@/core/store/TaskStore';
 import { TaskStore } from '@/core/store/TaskStore';
-import type { TasksFile } from '@/core/types';
+import type { Task, TasksFile } from '@/core/types';
 import { SCHEMA_VERSION } from '@/core/types';
 
 function makePersistence(initial: TasksFile = { schemaVersion: SCHEMA_VERSION, tasks: [] }) {
@@ -16,34 +17,71 @@ function makePersistence(initial: TasksFile = { schemaVersion: SCHEMA_VERSION, t
   };
 }
 
+function makeTaskInput(overrides: Partial<TaskInput> = {}): TaskInput {
+  return {
+    title: 'test',
+    listId: 'list_inbox',
+    tags: [],
+    date: null,
+    start: null,
+    end: null,
+    priority: 'none',
+    done: false,
+    completedAt: null,
+    description: '',
+    subtasks: [],
+    noteRef: null,
+    recurrence: null,
+    ...overrides,
+  };
+}
+
+function makeTask(overrides: Partial<Task> = {}): Task {
+  return {
+    id: 'tsk_1',
+    title: 'test',
+    listId: 'list_inbox',
+    tags: [],
+    date: null,
+    start: null,
+    end: null,
+    priority: 'none',
+    done: false,
+    completedAt: null,
+    description: '',
+    subtasks: [],
+    noteRef: null,
+    recurrence: null,
+    createdAt: 0,
+    updatedAt: 0,
+    ...overrides,
+  };
+}
+
 describe('TaskStore.init', () => {
   it('loads tasks from persistence', async () => {
     const persistence = makePersistence({
       schemaVersion: SCHEMA_VERSION,
-      tasks: [
-        {
-          id: 'tsk_1',
-          title: 'existing',
-          listId: 'list_inbox',
-          tags: [],
-          date: '2026-04-20',
-          start: null,
-          end: null,
-          priority: 'none',
-          done: false,
-          completedAt: null,
-          description: '',
-          subtasks: [],
-          noteRef: null,
-          createdAt: 0,
-          updatedAt: 0,
-        },
-      ],
+      tasks: [makeTask({ id: 'tsk_1', title: 'existing', date: '2026-04-20' })],
     });
     const store = new TaskStore(persistence);
     await store.init();
     expect(store.getAll()).toHaveLength(1);
     expect(store.getAll()[0].title).toBe('existing');
+  });
+
+  it('normalizes missing recurrence field to null (migration)', async () => {
+    const taskWithoutRecurrence = {
+      ...makeTask({ id: 'tsk_old' }),
+      recurrence: undefined,
+    } as unknown as Task;
+    const persistence = makePersistence({
+      schemaVersion: SCHEMA_VERSION,
+      tasks: [taskWithoutRecurrence],
+    });
+    const store = new TaskStore(persistence);
+    await store.init();
+    expect(store.getAll()[0].recurrence).toBeNull();
   });
 });
 
@@ -56,20 +94,13 @@ describe('TaskStore.add', () => {
     const listener = jest.fn();
     store.subscribe(listener);
 
-    const created = await store.add({
+    const created = await store.add(makeTaskInput({
       title: '디자인 리뷰',
-      listId: 'list_inbox',
-      tags: [],
       date: '2026-04-20',
       start: '14:00',
       end: '15:00',
       priority: 'med',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
+    }));
 
     expect(created.id).toMatch(/^tsk_/);
     expect(created.createdAt).toBeGreaterThan(0);
@@ -85,20 +116,7 @@ describe('TaskStore.update', () => {
     const persistence = makePersistence();
     const store = new TaskStore(persistence);
     await store.init();
-    const created = await store.add({
-      title: 'old',
-      listId: 'list_inbox',
-      tags: [],
-      date: null,
-      start: null,
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
+    const created = await store.add(makeTaskInput({ title: 'old' }));
     const originalUpdatedAt = created.updatedAt;
 
     const listener = jest.fn();
@@ -119,20 +137,7 @@ describe('TaskStore.remove', () => {
     const persistence = makePersistence();
     const store = new TaskStore(persistence);
     await store.init();
-    const created = await store.add({
-      title: 'doomed',
-      listId: 'list_inbox',
-      tags: [],
-      date: null,
-      start: null,
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
+    const created = await store.add(makeTaskInput({ title: 'doomed' }));
 
     const listener = jest.fn();
     store.subscribe(listener);
@@ -154,25 +159,7 @@ describe('TaskStore.refresh', () => {
 
     persistence.loadTasks.mockResolvedValueOnce({
       schemaVersion: SCHEMA_VERSION,
-      tasks: [
-        {
-          id: 'tsk_external',
-          title: '외부 추가',
-          listId: 'list_inbox',
-          tags: [],
-          date: '2026-04-23',
-          start: null,
-          end: null,
-          priority: 'none',
-          done: false,
-          completedAt: null,
-          description: '',
-          subtasks: [],
-          noteRef: null,
-          createdAt: 1,
-          updatedAt: 1,
-        },
-      ],
+      tasks: [makeTask({ id: 'tsk_external', title: '외부 추가', date: '2026-04-23', createdAt: 1, updatedAt: 1 })],
     });
 
     await store.refresh();
@@ -186,20 +173,7 @@ describe('TaskStore.refresh', () => {
     const persistence = makePersistence();
     const store = new TaskStore(persistence);
     await store.init();
-    const created = await store.add({
-      title: 'same',
-      listId: 'list_inbox',
-      tags: [],
-      date: null,
-      start: null,
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
+    const created = await store.add(makeTaskInput({ title: 'same' }));
 
     const listener = jest.fn();
     store.subscribe(listener);
@@ -219,20 +193,7 @@ describe('TaskStore.toggleDone', () => {
     const persistence = makePersistence();
     const store = new TaskStore(persistence);
     await store.init();
-    const created = await store.add({
-      title: 't',
-      listId: 'list_inbox',
-      tags: [],
-      date: null,
-      start: null,
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
+    const created = await store.add(makeTaskInput({ title: 't' }));
 
     await store.toggleDone(created.id);
 
@@ -245,20 +206,7 @@ describe('TaskStore.toggleDone', () => {
     const persistence = makePersistence();
     const store = new TaskStore(persistence);
     await store.init();
-    const created = await store.add({
-      title: 't',
-      listId: 'list_inbox',
-      tags: [],
-      date: null,
-      start: null,
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
+    const created = await store.add(makeTaskInput({ title: 't' }));
     await store.toggleDone(created.id);
     await store.toggleDone(created.id);
 
@@ -277,6 +225,43 @@ describe('TaskStore.toggleDone', () => {
     await store.toggleDone('nope');
     expect(listener).not.toHaveBeenCalled();
   });
+
+  it('반복 태스크 완료 시 다음 occurrence를 자동 생성한다', async () => {
+    const persistence = makePersistence();
+    const store = new TaskStore(persistence);
+    await store.init();
+    const created = await store.add(makeTaskInput({
+      title: '매일 운동',
+      date: '2026-04-24',
+      recurrence: { type: 'daily' },
+    }));
+
+    await store.toggleDone(created.id);
+
+    const all = store.getAll();
+    expect(all).toHaveLength(2);
+    const original = all.find((t) => t.id === created.id)!;
+    const next = all.find((t) => t.id !== created.id)!;
+    expect(original.done).toBe(true);
+    expect(next.done).toBe(false);
+    expect(next.date).toBe('2026-04-25');
+    expect(next.recurrence).toEqual({ type: 'daily' });
+  });
+
+  it('date가 없는 반복 태스크는 다음 occurrence를 생성하지 않는다', async () => {
+    const persistence = makePersistence();
+    const store = new TaskStore(persistence);
+    await store.init();
+    const created = await store.add(makeTaskInput({
+      title: 'inbox 반복',
+      date: null,
+      recurrence: { type: 'daily' },
+    }));
+
+    await store.toggleDone(created.id);
+
+    expect(store.getAll()).toHaveLength(1);
+  });
 });
 
 describe('TaskStore.subscribe', () => {
@@ -289,21 +274,7 @@ describe('TaskStore.subscribe', () => {
     const unsubscribe = store.subscribe(listener);
     unsubscribe();
 
-    await store.add({
-      title: 'x',
-      listId: 'list_inbox',
-      tags: [],
-      date: null,
-      start: null,
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
-
+    await store.add(makeTaskInput({ title: 'x' }));
     expect(listener).not.toHaveBeenCalled();
   });
 });
@@ -314,62 +285,10 @@ describe('TaskStore.getByDate', () => {
     const store = new TaskStore(persistence);
     await store.init();
 
-    await store.add({
-      title: 'no time',
-      listId: 'list_inbox',
-      tags: [],
-      date: '2026-04-20',
-      start: null,
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
-    await store.add({
-      title: 'afternoon',
-      listId: 'list_inbox',
-      tags: [],
-      date: '2026-04-20',
-      start: '14:00',
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
-    await store.add({
-      title: 'morning',
-      listId: 'list_inbox',
-      tags: [],
-      date: '2026-04-20',
-      start: '09:00',
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
-    await store.add({
-      title: 'other day',
-      listId: 'list_inbox',
-      tags: [],
-      date: '2026-04-21',
-      start: '10:00',
-      end: null,
-      priority: 'none',
-      done: false,
-      completedAt: null,
-      description: '',
-      subtasks: [],
-      noteRef: null,
-    });
+    await store.add(makeTaskInput({ title: 'no time',  date: '2026-04-20' }));
+    await store.add(makeTaskInput({ title: 'afternoon', date: '2026-04-20', start: '14:00' }));
+    await store.add(makeTaskInput({ title: 'morning',   date: '2026-04-20', start: '09:00' }));
+    await store.add(makeTaskInput({ title: 'other day', date: '2026-04-21', start: '10:00' }));
 
     const result = store.getByDate('2026-04-20');
     expect(result.map((t) => t.title)).toEqual(['morning', 'afternoon', 'no time']);
