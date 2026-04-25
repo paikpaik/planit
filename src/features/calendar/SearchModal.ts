@@ -2,6 +2,7 @@ import type { App } from 'obsidian';
 import { Modal, setIcon } from 'obsidian';
 
 import type { List, Task } from '../../core/types';
+import { t } from '../../i18n';
 import { searchTasks } from './searchTasks';
 
 export class SearchModal extends Modal {
@@ -29,7 +30,7 @@ export class SearchModal extends Modal {
 
     const input = inputWrap.createEl('input', {
       cls: 'planit-search-input',
-      attr: { placeholder: '태스크 검색...', type: 'text' },
+      attr: { placeholder: t('search.placeholder'), type: 'text' },
     }) as HTMLInputElement;
 
     const resultList = contentEl.createDiv({ cls: 'planit-search-results' });
@@ -40,7 +41,7 @@ export class SearchModal extends Modal {
 
       if (this.results.length === 0) {
         const empty = resultList.createDiv({ cls: 'planit-search-empty' });
-        empty.textContent = input.value.trim() ? '일치하는 태스크가 없습니다' : '제목, 설명, 태그로 검색하세요';
+        empty.textContent = input.value.trim() ? t('search.noMatch') : t('search.hint');
         return;
       }
 
@@ -105,7 +106,6 @@ export class SearchModal extends Modal {
       }
     });
 
-    // 초기 상태: 빈 안내 메시지
     render();
     setTimeout(() => input.focus(), 0);
   }

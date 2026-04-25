@@ -1,17 +1,11 @@
 import type { App } from 'obsidian';
-import { Modal, Notice, setIcon } from 'obsidian';
+import { Modal, Notice, setIcon,TFile } from 'obsidian';
 
 import type { List, Priority, RecurrenceRule, Task } from '../../core/types';
-import { DAY_LABELS } from '../../utils/recurrence';
+import { t, weekdayShort } from '../../i18n';
 import { buildTaskPatch } from './editTask';
+import { NotePickerModal } from './NotePickerModal';
 import { parseTimeInput } from './quickAdd';
-
-const PRIORITY_LABELS: Record<Priority, string> = {
-  none: '없음',
-  low: '낮음',
-  med: '보통',
-  high: '높음',
-};
 
 export interface EditTaskCallbacks {
   onSave: (patch: ReturnType<typeof buildTaskPatch>) => Promise<void>;
@@ -33,17 +27,17 @@ export class EditTaskModal extends Modal {
     contentEl.empty();
     contentEl.addClass('planit-edit-task');
 
-    contentEl.createEl('h3', { text: '태스크 편집', cls: 'planit-edit-task-heading' });
+    contentEl.createEl('h3', { text: t('editTask.heading'), cls: 'planit-edit-task-heading' });
 
     const titleInput = contentEl.createEl('input', {
       type: 'text',
       cls: 'planit-edit-task-input',
-      attr: { placeholder: '제목' },
+      attr: { placeholder: t('editTask.titlePlaceholder') },
     }) as HTMLInputElement;
     titleInput.value = this.task.title;
 
     const dateRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
-    dateRow.createEl('label', { text: '날짜', cls: 'planit-edit-task-label' });
+    dateRow.createEl('label', { text: t('editTask.labelDate'), cls: 'planit-edit-task-label' });
     const dateInput = dateRow.createEl('input', {
       type: 'date',
       cls: 'planit-edit-task-date',
@@ -51,7 +45,7 @@ export class EditTaskModal extends Modal {
     dateInput.value = this.task.date ?? '';
 
     const timeRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
-    timeRow.createEl('label', { text: '시간', cls: 'planit-edit-task-label' });
+    timeRow.createEl('label', { text: t('editTask.labelTime'), cls: 'planit-edit-task-label' });
     const startInput = timeRow.createEl('input', {
       type: 'text',
       cls: 'planit-quick-add-time',
@@ -67,7 +61,7 @@ export class EditTaskModal extends Modal {
     endInput.value = this.task.end ?? '';
 
     const listRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
-    listRow.createEl('label', { text: '리스트', cls: 'planit-edit-task-label' });
+    listRow.createEl('label', { text: t('editTask.labelList'), cls: 'planit-edit-task-label' });
     const listSelect = listRow.createEl('select', {
       cls: 'planit-edit-task-select',
     }) as HTMLSelectElement;
@@ -80,14 +74,14 @@ export class EditTaskModal extends Modal {
     }
 
     const priorityRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
-    priorityRow.createEl('label', { text: '우선순위', cls: 'planit-edit-task-label' });
+    priorityRow.createEl('label', { text: t('editTask.labelPriority'), cls: 'planit-edit-task-label' });
     const priorityBtns = priorityRow.createDiv({ cls: 'planit-priority-btns' });
     let selectedPriority: Priority = this.task.priority;
     const priorityButtons = new Map<Priority, HTMLButtonElement>();
     for (const p of ['high', 'med', 'low', 'none'] as Priority[]) {
       const btn = priorityBtns.createEl('button', {
         cls: `planit-priority-btn priority-${p}`,
-        text: PRIORITY_LABELS[p],
+        text: t(`priority.${p}`),
       });
       if (p === selectedPriority) btn.addClass('is-active');
       btn.addEventListener('click', () => {
@@ -98,7 +92,7 @@ export class EditTaskModal extends Modal {
     }
 
     const tagRow = contentEl.createDiv({ cls: 'planit-edit-task-row planit-edit-task-row-wrap' });
-    tagRow.createEl('label', { text: '태그', cls: 'planit-edit-task-label' });
+    tagRow.createEl('label', { text: t('editTask.labelTags'), cls: 'planit-edit-task-label' });
     const tagArea = tagRow.createDiv({ cls: 'planit-tag-area' });
     let currentTags: string[] = [...this.task.tags];
 
@@ -109,7 +103,7 @@ export class EditTaskModal extends Modal {
         chip.createSpan({ text: `#${tag}` });
         const removeBtn = chip.createEl('button', {
           cls: 'planit-tag-chip-remove',
-          attr: { 'aria-label': `#${tag} 삭제` },
+          attr: { 'aria-label': t('editTask.removeTag', { tag }) },
         });
         setIcon(removeBtn, 'x');
         removeBtn.addEventListener('click', () => {
@@ -119,7 +113,7 @@ export class EditTaskModal extends Modal {
       }
       const input = tagArea.createEl('input', {
         cls: 'planit-tag-input',
-        attr: { placeholder: currentTags.length === 0 ? '태그 입력 후 Enter' : '' },
+        attr: { placeholder: currentTags.length === 0 ? t('editTask.tagPlaceholder') : '' },
       }) as HTMLInputElement;
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ',') {
@@ -142,7 +136,7 @@ export class EditTaskModal extends Modal {
 
     // ── 반복 설정 ──
     const recRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
-    recRow.createEl('label', { text: '반복', cls: 'planit-edit-task-label' });
+    recRow.createEl('label', { text: t('editTask.labelRecurrence'), cls: 'planit-edit-task-label' });
     const recWrapper = recRow.createDiv({ cls: 'planit-recurrence' });
 
     let currentRecurrence: RecurrenceRule | null = this.task.recurrence;
@@ -150,11 +144,11 @@ export class EditTaskModal extends Modal {
     const typeSelect = recWrapper.createEl('select', {
       cls: 'planit-edit-task-select planit-recurrence-type',
     }) as HTMLSelectElement;
-    for (const [val, label] of [
-      ['none', '없음'], ['daily', '매일'], ['weekly', '매주'],
-      ['monthly', '매월'], ['nweekly', 'N주마다'],
-    ] as [string, string][]) {
-      typeSelect.createEl('option', { value: val, text: label });
+    for (const [val, labelKey] of [
+      ['none', 'recurrence.none'], ['daily', 'recurrence.daily'], ['weekly', 'recurrence.weekly'],
+      ['monthly', 'recurrence.monthly'], ['nweekly', 'recurrence.nweekly'],
+    ] as [string, Parameters<typeof t>[0]][]) {
+      typeSelect.createEl('option', { value: val, text: t(labelKey) });
     }
     typeSelect.value = currentRecurrence?.type ?? 'none';
 
@@ -175,7 +169,7 @@ export class EditTaskModal extends Modal {
           cls: 'planit-recurrence-num',
           attr: { type: 'number', min: '1', max: '31', value: String(existing) },
         }) as HTMLInputElement;
-        subEl.createSpan({ cls: 'planit-recurrence-unit', text: '일' });
+        subEl.createSpan({ cls: 'planit-recurrence-unit', text: t('recurrence.dayUnit') });
         currentRecurrence = { type: 'monthly', day: existing };
         numInput.addEventListener('input', () => {
           const v = Math.min(31, Math.max(1, Number(numInput.value) || 1));
@@ -191,7 +185,7 @@ export class EditTaskModal extends Modal {
           cls: 'planit-recurrence-num',
           attr: { type: 'number', min: '1', max: '52', value: String(existingN) },
         }) as HTMLInputElement;
-        subEl.createSpan({ cls: 'planit-recurrence-unit', text: '주마다' });
+        subEl.createSpan({ cls: 'planit-recurrence-unit', text: t('recurrence.weekUnit') });
         currentRecurrence = {
           type: 'nweekly',
           n: existingN,
@@ -214,8 +208,9 @@ export class EditTaskModal extends Modal {
           : [(currentRecurrence as { type: 'nweekly'; n: number; day: number }).day],
       );
 
+      const dayLabels = weekdayShort();
       const dayBtns = subEl.createDiv({ cls: 'planit-recurrence-days' });
-      DAY_LABELS.forEach((label, i) => {
+      dayLabels.forEach((label, i) => {
         const btn = dayBtns.createEl('button', { cls: 'planit-recurrence-day-btn', text: label });
         if (initDays.has(i)) btn.addClass('is-active');
         btn.addEventListener('click', () => {
@@ -241,25 +236,62 @@ export class EditTaskModal extends Modal {
     typeSelect.addEventListener('change', renderSub);
     renderSub();
 
+    // ── 노트 연결 ──
+    const noteRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
+    noteRow.createEl('label', { text: t('editTask.labelNote'), cls: 'planit-edit-task-label' });
+    const noteArea = noteRow.createDiv({ cls: 'planit-note-ref' });
+    let currentNoteRef: string | null = this.task.noteRef;
+
+    const renderNoteRef = (): void => {
+      noteArea.empty();
+      if (currentNoteRef) {
+        const nameEl = noteArea.createSpan({
+          cls: 'planit-note-ref-name',
+          text: currentNoteRef.replace(/\.md$/, '').split('/').pop() ?? currentNoteRef,
+        });
+        nameEl.addEventListener('click', () => {
+          const file = this.app.vault.getAbstractFileByPath(currentNoteRef!);
+          if (file instanceof TFile) void this.app.workspace.getLeaf(false).openFile(file);
+        });
+        const clearBtn = noteArea.createEl('button', {
+          cls: 'planit-note-ref-clear',
+          attr: { 'aria-label': t('editTask.unlinkNote') },
+        });
+        setIcon(clearBtn, 'x');
+        clearBtn.addEventListener('click', () => { currentNoteRef = null; renderNoteRef(); });
+      } else {
+        const pickBtn = noteArea.createEl('button', { cls: 'planit-note-ref-pick' });
+        setIcon(pickBtn.createSpan(), 'file-plus');
+        pickBtn.createSpan({ text: t('editTask.linkNote') });
+        pickBtn.addEventListener('click', () => {
+          new NotePickerModal(this.app, (file) => {
+            currentNoteRef = file.path;
+            renderNoteRef();
+          }).open();
+        });
+      }
+    };
+    renderNoteRef();
+
     contentEl.createEl('label', {
-      text: '설명',
+      text: t('editTask.labelDescription'),
       cls: 'planit-edit-task-label planit-edit-task-label-block',
     });
     const descInput = contentEl.createEl('textarea', {
       cls: 'planit-edit-task-textarea',
-      attr: { rows: '3', placeholder: '메모' },
+      attr: { rows: '3', placeholder: t('editTask.memoPlaceholder') },
     }) as HTMLTextAreaElement;
     descInput.value = this.task.description;
 
     const actions = contentEl.createDiv({ cls: 'planit-edit-task-actions' });
     const deleteBtn = actions.createEl('button', {
-      text: '삭제',
+      text: t('btn.delete'),
       cls: 'planit-edit-task-delete',
     });
     const spacer = actions.createDiv({ cls: 'planit-edit-task-spacer' });
     spacer.style.flex = '1';
-    const cancelBtn = actions.createEl('button', { text: '취소' });
-    const saveBtn = actions.createEl('button', { text: '저장', cls: 'mod-cta' });
+    const cancelBtn = actions.createEl('button', { text: t('btn.cancel') });
+    const saveBtn = actions.createEl('button', { text: t('btn.save'), cls: 'mod-cta' });
 
     let submitting = false;
     const submit = async (): Promise<void> => {
@@ -272,13 +304,13 @@ export class EditTaskModal extends Modal {
 
       const startParsed = parseTimeInput(startInput.value);
       if (startParsed.kind === 'invalid') {
-        new Notice('시작 시간 형식이 올바르지 않습니다 (HH:mm)');
+        new Notice(t('error.startTime'));
         startInput.focus();
         return;
       }
       const endParsed = parseTimeInput(endInput.value);
       if (endParsed.kind === 'invalid') {
-        new Notice('종료 시간 형식이 올바르지 않습니다 (HH:mm)');
+        new Notice(t('error.endTime'));
         endInput.focus();
         return;
       }
@@ -293,6 +325,7 @@ export class EditTaskModal extends Modal {
         description: descInput.value,
         tags: currentTags,
         recurrence: currentRecurrence,
+        noteRef: currentNoteRef,
       });
 
       submitting = true;

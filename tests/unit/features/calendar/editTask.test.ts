@@ -12,6 +12,7 @@ describe('buildTaskPatch', () => {
       description: '회의실 A',
       tags: ['meeting'],
       recurrence: { type: 'weekly', days: [1] },
+      noteRef: 'daily/2026-04-22.md',
     });
 
     expect(patch).toEqual({
@@ -24,6 +25,7 @@ describe('buildTaskPatch', () => {
       description: '회의실 A',
       tags: ['meeting'],
       recurrence: { type: 'weekly', days: [1] },
+      noteRef: 'daily/2026-04-22.md',
     });
   });
 
@@ -38,6 +40,7 @@ describe('buildTaskPatch', () => {
       description: '',
       tags: [],
       recurrence: null,
+      noteRef: null,
     });
     expect(patch.date).toBeNull();
     expect(patch.start).toBeNull();

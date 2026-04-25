@@ -1,5 +1,6 @@
 import { type App, PluginSettingTab, Setting } from 'obsidian';
 
+import { setLocale, t } from '../../i18n';
 import type PlanitPlugin from '../../main';
 
 export class PlanitSettingTab extends PluginSettingTab {
@@ -12,12 +13,12 @@ export class PlanitSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName('주 시작일')
-      .setDesc('캘린더 그리드의 첫 번째 요일을 설정합니다.')
+      .setName(t('settings.weekStart'))
+      .setDesc(t('settings.weekStartDesc'))
       .addDropdown((drop) =>
         drop
-          .addOption('1', '월요일')
-          .addOption('0', '일요일')
+          .addOption('1', t('settings.monday'))
+          .addOption('0', t('settings.sunday'))
           .setValue(String(this.plugin.settings.weekStart))
           .onChange(async (value) => {
             this.plugin.settings.weekStart = Number(value) as 0 | 1;
@@ -30,8 +31,8 @@ export class PlanitSettingTab extends PluginSettingTab {
     const listOptions = Object.fromEntries(lists.map((l) => [l.id, l.name]));
 
     new Setting(containerEl)
-      .setName('기본 리스트')
-      .setDesc('새 태스크를 추가할 때 기본으로 선택되는 리스트입니다.')
+      .setName(t('settings.defaultList'))
+      .setDesc(t('settings.defaultListDesc'))
       .addDropdown((drop) =>
         drop
           .addOptions(listOptions)
@@ -43,23 +44,26 @@ export class PlanitSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('언어')
-      .setDesc('UI 표시 언어를 설정합니다. (전체 i18n 지원은 추후 예정)')
+      .setName(t('settings.language'))
+      .setDesc(t('settings.languageDesc'))
       .addDropdown((drop) =>
         drop
-          .addOption('ko', '한국어')
+          .addOption('ko', t('settings.korean'))
           .addOption('en', 'English')
           .setValue(this.plugin.settings.locale)
           .onChange(async (value) => {
             this.plugin.settings.locale = value as 'ko' | 'en';
             await this.plugin.saveSettings();
+            setLocale(this.plugin.settings.locale);
             this.plugin.refreshViews();
+            // 설정 패널도 즉시 새로고침
+            this.display();
           })
       );
 
     new Setting(containerEl)
-      .setName('사이드바 기본 펼침')
-      .setDesc('Planit을 열 때 리스트 사이드바를 기본으로 펼쳐둡니다.')
+      .setName(t('settings.sidebar'))
+      .setDesc(t('settings.sidebarDesc'))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.sidebarExpanded)

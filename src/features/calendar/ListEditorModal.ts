@@ -3,6 +3,7 @@ import { Modal } from 'obsidian';
 
 import type { ListInput } from '../../core/store';
 import type { List } from '../../core/types';
+import { t } from '../../i18n';
 
 const DEFAULT_COLOR = '#2C7EF8';
 
@@ -26,19 +27,19 @@ export class ListEditorModal extends Modal {
     contentEl.addClass('planit-list-editor');
 
     contentEl.createEl('h3', {
-      text: this.mode === 'create' ? '새 리스트' : '리스트 편집',
+      text: this.mode === 'create' ? t('listEditor.createTitle') : t('listEditor.editTitle'),
       cls: 'planit-list-editor-heading',
     });
 
     const nameInput = contentEl.createEl('input', {
       type: 'text',
       cls: 'planit-list-editor-input',
-      attr: { placeholder: '리스트 이름' },
+      attr: { placeholder: t('listEditor.namePlaceholder') },
     }) as HTMLInputElement;
     nameInput.value = this.initial?.name ?? '';
 
     const colorRow = contentEl.createDiv({ cls: 'planit-list-editor-row' });
-    colorRow.createEl('label', { text: '색상', cls: 'planit-list-editor-label' });
+    colorRow.createEl('label', { text: t('listEditor.colorLabel'), cls: 'planit-list-editor-label' });
     const colorInput = colorRow.createEl('input', {
       type: 'color',
       cls: 'planit-list-editor-color',
@@ -46,8 +47,8 @@ export class ListEditorModal extends Modal {
     colorInput.value = this.initial?.color ?? DEFAULT_COLOR;
 
     const actions = contentEl.createDiv({ cls: 'planit-list-editor-actions' });
-    const cancelBtn = actions.createEl('button', { text: '취소' });
-    const saveBtn = actions.createEl('button', { text: '저장', cls: 'mod-cta' });
+    const cancelBtn = actions.createEl('button', { text: t('btn.cancel') });
+    const saveBtn = actions.createEl('button', { text: t('btn.save'), cls: 'mod-cta' });
 
     let submitting = false;
     const submit = async (): Promise<void> => {

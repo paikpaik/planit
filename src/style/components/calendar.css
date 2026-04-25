@@ -607,3 +607,174 @@
 .planit-priority-dot.priority-med  { background: #FF9500; }
 .planit-priority-dot.priority-low  { background: #007AFF; }
 
+/* ── 일 뷰 ── */
+
+.planit-toolbar-title {
+  white-space: nowrap;
+}
+
+.planit-day-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.planit-day-header-dow {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.planit-day-header-date {
+  font-size: 1.4em;
+  font-weight: 600;
+}
+
+.planit-day-header.is-today .planit-day-header-date {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 999px;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+}
+
+.planit-day-allday {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px 6px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.planit-day-allday-label {
+  width: 52px;
+  font-size: 0.72em;
+  color: var(--text-muted);
+  text-align: right;
+  padding-right: 8px;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+.planit-day-allday-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+
+.planit-day-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.planit-day-grid {
+  position: relative;
+}
+
+.planit-day-hour-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  border-top: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+}
+
+.planit-day-hour-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-day-hour-label {
+  width: 52px;
+  padding: 0 8px 0 0;
+  font-size: 0.72em;
+  color: var(--text-muted);
+  text-align: right;
+  flex-shrink: 0;
+  line-height: 1;
+  transform: translateY(-0.55em);
+  pointer-events: none;
+  user-select: none;
+}
+
+.planit-day-events-layer {
+  position: absolute;
+  left: 60px;
+  right: 8px;
+  top: 0;
+  pointer-events: none;
+}
+
+.planit-day-block {
+  position: absolute;
+  /* left, width, top, height set by JS */
+  border-radius: 4px;
+  background: var(--background-modifier-hover);
+  border-left: 3px solid var(--interactive-accent);
+  padding: 3px 6px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+  z-index: 1;
+  pointer-events: all;
+}
+
+.planit-day-block:hover {
+  filter: brightness(0.92);
+}
+
+.planit-day-block.is-done .planit-day-block-title {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.planit-day-block-time {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.planit-day-block-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.planit-day-now {
+  position: absolute;
+  left: 60px;
+  right: 0;
+  height: 2px;
+  background: #FF3B30;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.planit-day-now::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #FF3B30;
+}
+

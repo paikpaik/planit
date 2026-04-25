@@ -7,6 +7,7 @@ import type { PlanitSettings } from './core/types';
 import { DEFAULT_SETTINGS, VIEW_TYPE_PLANIT } from './core/types';
 import { PlanitView } from './features/calendar/PlanitView';
 import { PlanitSettingTab } from './features/settings/PlanitSettingTab';
+import { setLocale } from './i18n';
 import { toISODate } from './utils/date';
 
 const TASKS_FILE_PATH = '.planit/tasks.json';
@@ -23,6 +24,7 @@ export default class PlanitPlugin extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadSettings();
+    setLocale(this.settings.locale);
 
     this.storage = new StorageService(this.app);
     this.taskStore = new TaskStore(this.storage);

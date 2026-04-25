@@ -1,3 +1,5 @@
+import { formatMonthDay, t } from '../i18n';
+
 export type WeekStart = 0 | 1;
 
 export function addMonths(date: Date, months: number): Date {
@@ -19,8 +21,6 @@ export function toISODate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
-
 export function getUpcomingDates(fromIso: string, days: number): string[] {
   const [y, m, d] = fromIso.split('-').map(Number);
   return Array.from({ length: days }, (_, i) => {
@@ -31,11 +31,11 @@ export function getUpcomingDates(fromIso: string, days: number): string[] {
 export function formatDateLabel(iso: string, todayIso: string): string {
   const [ty, tm, td] = todayIso.split('-').map(Number);
   const tomorrowIso = toISODate(new Date(ty, tm - 1, td + 1));
-  if (iso === todayIso) return '오늘';
-  if (iso === tomorrowIso) return '내일';
+  if (iso === todayIso) return t('date.today');
+  if (iso === tomorrowIso) return t('date.tomorrow');
   const [y, m, d] = iso.split('-').map(Number);
   const dow = new Date(y, m - 1, d).getDay();
-  return `${m}월 ${d}일 (${WEEKDAY_KO[dow]})`;
+  return formatMonthDay(m, d, dow);
 }
 
 export function getWeekStart(date: Date, weekStart: WeekStart): Date {

@@ -205,3 +205,83 @@
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
+
+/* ── 노트 연결 ── */
+
+.planit-note-ref {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.planit-note-ref-name {
+  color: var(--interactive-accent);
+  font-size: 0.9em;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.planit-note-ref-name:hover {
+  opacity: 0.8;
+}
+
+.planit-note-ref-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.planit-note-ref-clear:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-note-ref-clear svg {
+  width: 10px;
+  height: 10px;
+}
+
+.planit-note-ref-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.planit-note-ref-pick:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-note-ref-pick svg {
+  width: 12px;
+  height: 12px;
+}
+
+.planit-note-picker-path {
+  color: var(--text-muted);
+  font-size: 0.8em;
+  display: block;
+  margin-top: 2px;
+}

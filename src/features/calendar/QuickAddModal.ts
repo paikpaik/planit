@@ -3,12 +3,14 @@ import { Modal, Notice } from 'obsidian';
 
 import type { TaskInput } from '../../core/store';
 import type { List } from '../../core/types';
+import { t } from '../../i18n';
 import { buildTaskInput, parseTimeInput } from './quickAdd';
 
 export interface QuickAddDefaults {
   date: string | null;
   listId: string;
   lists: List[];
+  start?: string;
 }
 
 export class QuickAddModal extends Modal {
@@ -25,29 +27,30 @@ export class QuickAddModal extends Modal {
     contentEl.empty();
     contentEl.addClass('planit-quick-add');
 
-    contentEl.createEl('h3', { text: '태스크 추가', cls: 'planit-quick-add-title' });
+    contentEl.createEl('h3', { text: t('quickAdd.heading'), cls: 'planit-quick-add-title' });
     contentEl.createEl('p', {
-      text: this.defaults.date ?? '날짜 없음 (Inbox)',
+      text: this.defaults.date ?? t('quickAdd.noDate'),
       cls: 'planit-quick-add-date',
     });
 
     const titleInput = contentEl.createEl('input', {
       type: 'text',
       cls: 'planit-quick-add-input',
-      attr: { placeholder: '제목', autofocus: 'true' },
+      attr: { placeholder: t('quickAdd.titlePlaceholder'), autofocus: 'true' },
     });
 
     const timeRow = contentEl.createDiv({ cls: 'planit-quick-add-time-row' });
     const startInput = timeRow.createEl('input', {
       type: 'text',
       cls: 'planit-quick-add-time',
-      attr: { placeholder: 'HH:mm', 'aria-label': '시작 시간' },
-    });
+      attr: { placeholder: 'HH:mm', 'aria-label': t('quickAdd.startAriaLabel') },
+    }) as HTMLInputElement;
+    if (this.defaults.start) startInput.value = this.defaults.start;
     timeRow.createSpan({ cls: 'planit-quick-add-time-sep', text: '—' });
     const endInput = timeRow.createEl('input', {
       type: 'text',
       cls: 'planit-quick-add-time',
-      attr: { placeholder: 'HH:mm', 'aria-label': '종료 시간' },
+      attr: { placeholder: 'HH:mm', 'aria-label': t('quickAdd.endAriaLabel') },
     });
 
     const listSelect = contentEl.createEl('select', { cls: 'planit-quick-add-list' });
@@ -60,8 +63,8 @@ export class QuickAddModal extends Modal {
     }
 
     const actions = contentEl.createDiv({ cls: 'planit-quick-add-actions' });
-    const cancelBtn = actions.createEl('button', { text: '취소' });
-    const saveBtn = actions.createEl('button', { text: '저장', cls: 'mod-cta' });
+    const cancelBtn = actions.createEl('button', { text: t('btn.cancel') });
+    const saveBtn = actions.createEl('button', { text: t('btn.save'), cls: 'mod-cta' });
 
     let submitting = false;
     const submit = async (): Promise<void> => {
@@ -74,14 +77,14 @@ export class QuickAddModal extends Modal {
 
       const startParsed = parseTimeInput(startInput.value);
       if (startParsed.kind === 'invalid') {
-        new Notice('시작 시간 형식이 올바르지 않습니다 (HH:mm)');
+        new Notice(t('error.startTime'));
         startInput.focus();
         return;
       }
 
       const endParsed = parseTimeInput(endInput.value);
       if (endParsed.kind === 'invalid') {
-        new Notice('종료 시간 형식이 올바르지 않습니다 (HH:mm)');
+        new Notice(t('error.endTime'));
         endInput.focus();
         return;
       }

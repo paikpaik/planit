@@ -11,6 +11,7 @@ export interface EditTaskFormValues {
   description: string;
   tags: string[];
   recurrence: RecurrenceRule | null;
+  noteRef: string | null;
 }
 
 export function buildTaskPatch(values: EditTaskFormValues): Partial<TaskInput> {
@@ -24,5 +25,6 @@ export function buildTaskPatch(values: EditTaskFormValues): Partial<TaskInput> {
     description: values.description,
     tags: values.tags,
     recurrence: values.recurrence,
+    noteRef: values.noteRef,
   };
 }
