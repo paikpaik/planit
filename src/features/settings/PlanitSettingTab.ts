@@ -13,6 +13,21 @@ export class PlanitSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
+      .setName(t('settings.defaultView'))
+      .setDesc(t('settings.defaultViewDesc'))
+      .addDropdown((drop) =>
+        drop
+          .addOption('month', t('toolbar.month'))
+          .addOption('week', t('toolbar.week'))
+          .addOption('day', t('toolbar.day'))
+          .setValue(this.plugin.settings.defaultView)
+          .onChange(async (value) => {
+            this.plugin.settings.defaultView = value as 'month' | 'week' | 'day';
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
       .setName(t('settings.weekStart'))
       .setDesc(t('settings.weekStartDesc'))
       .addDropdown((drop) =>

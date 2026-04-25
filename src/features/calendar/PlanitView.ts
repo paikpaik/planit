@@ -23,7 +23,7 @@ function getSmartViewMeta(): { view: SmartView; label: string; icon: string; emp
 
 export class PlanitView extends ItemView {
   private cursor: Date = new Date();
-  private viewMode: 'month' | 'week' | 'day' = 'month';
+  private viewMode: 'month' | 'week' | 'day' = this.plugin.settings.defaultView;
   private activeListId: string | null = null;
   private smartView: SmartView | null = null;
   private activeTag: string | null = null;

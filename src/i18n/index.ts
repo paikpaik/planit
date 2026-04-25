@@ -167,6 +167,8 @@ const ko = {
   'listEditor.colorLabel': '색상',
 
   // 설정
+  'settings.defaultView': '기본 뷰',
+  'settings.defaultViewDesc': '플러그인을 열 때 표시할 기본 캘린더 뷰입니다.',
   'settings.weekStart': '주 시작일',
   'settings.weekStartDesc': '캘린더 그리드의 첫 번째 요일을 설정합니다.',
   'settings.monday': '월요일',
@@ -278,6 +280,8 @@ const en: { [K in keyof Translations]: string } = {
   'listEditor.namePlaceholder': 'List name',
   'listEditor.colorLabel': 'Color',
 
+  'settings.defaultView': 'Default view',
+  'settings.defaultViewDesc': 'Calendar view shown when the plugin is opened.',
   'settings.weekStart': 'Week start',
   'settings.weekStartDesc': 'First day of the week in the calendar grid.',
   'settings.monday': 'Monday',

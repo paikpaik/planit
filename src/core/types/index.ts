@@ -56,11 +56,14 @@ export type RecurrenceRule =
   | { type: 'monthly'; day: number }           // day: 1~31
   | { type: 'nweekly'; n: number; day: number }; // 매 n주마다 특정 요일
 
+export type CalView = 'month' | 'week' | 'day';
+
 export interface PlanitSettings {
   defaultListId: string;
   weekStart: WeekStart;
   locale: 'ko' | 'en';
   sidebarExpanded: boolean;
+  defaultView: CalView;
 }
 
 export const DEFAULT_SETTINGS: PlanitSettings = {
@@ -68,6 +71,7 @@ export const DEFAULT_SETTINGS: PlanitSettings = {
   weekStart: 1,
   locale: 'ko',
   sidebarExpanded: false,
+  defaultView: 'month',
 };
 
 export const DEFAULT_LISTS: List[] = [
