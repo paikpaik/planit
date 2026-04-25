@@ -1,0 +1,292 @@
+.planit-edit-task .planit-edit-task-heading {
+  margin: 0 0 12px;
+}
+
+.planit-edit-task-input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 6px 8px;
+  font-size: 1em;
+}
+
+.planit-edit-task-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.planit-edit-task-label {
+  width: 5em;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.planit-edit-task-label-block {
+  display: block;
+  width: auto;
+  margin: 6px 0 4px;
+}
+
+.planit-edit-task-date,
+.planit-edit-task-select {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 8px;
+}
+
+.planit-edit-task-row .planit-quick-add-time-row {
+  flex: 1;
+}
+
+.planit-edit-task-textarea {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 6px 8px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.planit-edit-task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.planit-edit-task-delete {
+  color: var(--text-error);
+}
+
+.planit-recurrence {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.planit-recurrence-type {
+  flex: 1;
+}
+
+.planit-recurrence-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.planit-recurrence-num {
+  width: 4em;
+  padding: 3px 6px;
+  text-align: center;
+}
+
+.planit-recurrence-unit {
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.planit-recurrence-days {
+  display: flex;
+  gap: 4px;
+}
+
+.planit-recurrence-day-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--background-modifier-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.planit-recurrence-day-btn:hover {
+  border-color: var(--interactive-accent);
+  color: var(--interactive-accent);
+}
+
+.planit-recurrence-day-btn.is-active {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.planit-edit-task-row-wrap {
+  align-items: flex-start;
+}
+
+.planit-tag-area {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  min-height: 30px;
+  padding: 3px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: text;
+}
+
+.planit-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--background-modifier-hover);
+  color: var(--interactive-accent);
+  border: 1px solid var(--interactive-accent);
+  font-size: 0.8em;
+  padding: 2px 4px 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.planit-tag-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--interactive-accent);
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.planit-tag-chip-remove:hover {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  opacity: 1;
+}
+
+.planit-tag-chip-remove svg {
+  width: 10px;
+  height: 10px;
+}
+
+.planit-tag-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85em;
+  min-width: 80px;
+  flex: 1;
+  padding: 0;
+}
+
+.planit-priority-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.planit-priority-btn {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--background-modifier-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: border-color 0.1s, color 0.1s, background 0.1s;
+}
+
+.planit-priority-btn.priority-high.is-active { border-color: #FF3B30; color: #FF3B30; background: rgba(255,59,48,0.08); }
+.planit-priority-btn.priority-med.is-active  { border-color: #FF9500; color: #FF9500; background: rgba(255,149,0,0.08); }
+.planit-priority-btn.priority-low.is-active  { border-color: #007AFF; color: #007AFF; background: rgba(0,122,255,0.08); }
+.planit-priority-btn.priority-none.is-active { border-color: var(--text-muted); color: var(--text-normal); background: var(--background-modifier-hover); }
+
+.planit-priority-btn:not(.is-active):hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+/* ── 노트 연결 ── */
+
+.planit-note-ref {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.planit-note-ref-name {
+  color: var(--interactive-accent);
+  font-size: 0.9em;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.planit-note-ref-name:hover {
+  opacity: 0.8;
+}
+
+.planit-note-ref-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.planit-note-ref-clear:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-note-ref-clear svg {
+  width: 10px;
+  height: 10px;
+}
+
+.planit-note-ref-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.planit-note-ref-pick:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-note-ref-pick svg {
+  width: 12px;
+  height: 12px;
+}
+
+.planit-note-picker-path {
+  color: var(--text-muted);
+  font-size: 0.8em;
+  display: block;
+  margin-top: 2px;
+}

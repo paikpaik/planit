@@ -1,5 +1,8 @@
 /* CSS module order. scripts/build-css.mjs reads these @import lines. */
 /* Add new modules here to include them in the build. */
 
-@import "./base/variables.css";
-@import "./base/view.css";
+@import "./components/calendar.css";
+@import "./components/quick-add.css";
+@import "./components/edit-task.css";
+@import "./components/list-editor.css";
+@import "./components/search.css";

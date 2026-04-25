@@ -1,0 +1,800 @@
+.planit-view {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  height: 100%;
+  align-items: stretch;
+}
+
+.planit-sidebar {
+  flex: 0 0 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 8px;
+  border-right: 1px solid var(--background-modifier-border);
+}
+
+.planit-sidebar-heading {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  margin-bottom: 4px;
+}
+
+.planit-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+}
+
+.planit-sidebar-menu-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1em;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.planit-sidebar-item:hover .planit-sidebar-menu-btn {
+  opacity: 1;
+}
+
+.planit-sidebar-menu-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-sidebar-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.planit-sidebar-add:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-sidebar-add-icon {
+  width: 10px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.planit-sidebar-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-sidebar-item.is-active {
+  background: var(--background-modifier-hover);
+  font-weight: 600;
+}
+
+.planit-sidebar-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.planit-sidebar-dot-all {
+  background: linear-gradient(135deg, #8A8A8A 0%, #2C7EF8 50%, #34C759 100%);
+}
+
+.planit-sidebar-name {
+  color: var(--text-normal);
+  font-size: 0.9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planit-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.planit-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  scrollbar-width: none;
+}
+
+.planit-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.planit-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.planit-sidebar-toggle {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planit-sidebar-toggle:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-today-btn {
+  margin-left: auto;
+}
+
+.planit-toolbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.planit-toolbar-title {
+  font-size: 1.2em;
+  font-weight: 600;
+  min-width: 8em;
+  text-align: center;
+}
+
+.planit-nav-btn,
+.planit-today-btn {
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.95em;
+}
+
+.planit-nav-btn {
+  min-width: 2em;
+}
+
+.planit-nav-btn:hover,
+.planit-today-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-weekday-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--background-primary);
+  padding-bottom: 4px;
+}
+
+.planit-weekday {
+  padding: 4px 6px;
+  text-align: center;
+}
+
+.planit-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(96px, auto);
+  gap: 1px;
+  background: var(--background-modifier-border);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.planit-cell {
+  background: var(--background-primary);
+  padding: 4px 6px;
+  position: relative;
+  cursor: pointer;
+}
+
+.planit-cell.is-drop-target {
+  background: var(--background-modifier-hover);
+  outline: 2px dashed var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+.planit-chip.is-dragging {
+  opacity: 0.4;
+}
+
+.planit-cell:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-cell.is-other-month:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-cell.is-other-month {
+  background: var(--background-secondary);
+}
+
+.planit-cell.is-other-month .planit-cell-date {
+  color: var(--text-faint);
+}
+
+.planit-cell.is-today .planit-cell-date {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 999px;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planit-cell-date {
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.planit-cell-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.planit-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--background-modifier-hover);
+  font-size: 0.78em;
+  line-height: 1.25;
+  overflow: hidden;
+}
+
+.planit-chip.is-done .planit-chip-body {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.planit-chip-check {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planit-chip-check:hover {
+  border-color: var(--interactive-accent);
+}
+
+.planit-chip.is-done .planit-chip-check {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+}
+
+.planit-chip.is-done .planit-chip-check::after {
+  content: '';
+  width: 6px;
+  height: 3px;
+  border-left: 1.5px solid var(--text-on-accent);
+  border-bottom: 1.5px solid var(--text-on-accent);
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
+.planit-chip-body {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+
+.planit-chip-time {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.planit-chip-title {
+  color: var(--text-normal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.planit-chip-recurrence {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.planit-chip-recurrence svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* ── 뷰 토글 ── */
+
+.planit-view-toggle {
+  display: flex;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.planit-view-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.planit-view-toggle-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-view-toggle-btn.is-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* ── 주 뷰 ── */
+
+.planit-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--background-modifier-border);
+  border: 1px solid var(--background-modifier-border);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.planit-week-col {
+  background: var(--background-primary);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.planit-week-col.is-today .planit-week-col-date {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 999px;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planit-week-col-header {
+  text-align: center;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  flex-shrink: 0;
+}
+
+.planit-week-col-dow {
+  font-size: 0.75em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.planit-week-col-date {
+  font-size: 1em;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.planit-week-col-tasks {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: none;
+  cursor: pointer;
+}
+
+.planit-week-col-tasks::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── 사이드바 스마트 뷰 ── */
+
+.planit-sidebar-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.planit-sidebar-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.planit-sidebar-count {
+  margin-left: auto;
+  font-size: 0.75em;
+  color: var(--text-muted);
+  background: var(--background-modifier-border);
+  padding: 1px 6px;
+  border-radius: 999px;
+  min-width: 1.5em;
+  text-align: center;
+}
+
+.planit-sidebar-sep {
+  height: 1px;
+  background: var(--background-modifier-border);
+  margin: 6px 4px;
+}
+
+.planit-sidebar-tag-label {
+  color: var(--interactive-accent);
+  font-size: 0.85em;
+}
+
+/* ── 스마트 패널 ── */
+
+.planit-smart-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.planit-smart-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9em;
+  padding: 48px 24px;
+}
+
+.planit-smart-group-header {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 12px 16px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.planit-smart-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+.planit-smart-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-smart-row.is-done .planit-smart-row-body {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.planit-smart-row-body {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.planit-smart-row-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planit-smart-row-time {
+  font-size: 0.82em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.planit-smart-row-list-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.planit-smart-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin: 4px 4px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.planit-smart-add:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.planit-smart-add-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.planit-smart-add-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.planit-priority-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.planit-priority-dot.priority-high { background: #FF3B30; }
+.planit-priority-dot.priority-med  { background: #FF9500; }
+.planit-priority-dot.priority-low  { background: #007AFF; }
+
+/* ── 일 뷰 ── */
+
+.planit-toolbar-title {
+  white-space: nowrap;
+}
+
+.planit-day-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.planit-day-header-dow {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.planit-day-header-date {
+  font-size: 1.4em;
+  font-weight: 600;
+}
+
+.planit-day-header.is-today .planit-day-header-date {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 999px;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+}
+
+.planit-day-allday {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px 6px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.planit-day-allday-label {
+  width: 52px;
+  font-size: 0.72em;
+  color: var(--text-muted);
+  text-align: right;
+  padding-right: 8px;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+.planit-day-allday-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+
+.planit-day-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.planit-day-grid {
+  position: relative;
+}
+
+.planit-day-hour-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  border-top: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+}
+
+.planit-day-hour-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-day-hour-label {
+  width: 52px;
+  padding: 0 8px 0 0;
+  font-size: 0.72em;
+  color: var(--text-muted);
+  text-align: right;
+  flex-shrink: 0;
+  line-height: 1;
+  transform: translateY(-0.55em);
+  pointer-events: none;
+  user-select: none;
+}
+
+.planit-day-events-layer {
+  position: absolute;
+  left: 60px;
+  right: 8px;
+  top: 0;
+  pointer-events: none;
+}
+
+.planit-day-block {
+  position: absolute;
+  /* left, width, top, height set by JS */
+  border-radius: 4px;
+  background: var(--background-modifier-hover);
+  border-left: 3px solid var(--interactive-accent);
+  padding: 3px 6px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+  z-index: 1;
+  pointer-events: all;
+}
+
+.planit-day-block:hover {
+  filter: brightness(0.92);
+}
+
+.planit-day-block-resize {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+  z-index: 2;
+  border-radius: 0 0 4px 4px;
+}
+
+.planit-day-block-resize:hover {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.15));
+}
+
+.planit-day-block.is-resizing {
+  opacity: 0.85;
+  user-select: none;
+}
+
+.planit-day-block.is-done .planit-day-block-title {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.planit-day-block-time {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.planit-day-block-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.planit-day-now {
+  position: absolute;
+  left: 60px;
+  right: 0;
+  height: 2px;
+  background: #FF3B30;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.planit-day-now::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #FF3B30;
+}
+

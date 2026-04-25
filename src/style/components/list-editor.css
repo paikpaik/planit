@@ -1,0 +1,39 @@
+.planit-list-editor .planit-list-editor-heading {
+  margin: 0 0 12px;
+}
+
+.planit-list-editor-input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 6px 8px;
+  font-size: 1em;
+}
+
+.planit-list-editor-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.planit-list-editor-label {
+  width: 5em;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.planit-list-editor-color {
+  width: 40px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.planit-list-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
