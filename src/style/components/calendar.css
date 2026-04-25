@@ -737,6 +737,26 @@
   filter: brightness(0.92);
 }
 
+.planit-day-block-resize {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+  z-index: 2;
+  border-radius: 0 0 4px 4px;
+}
+
+.planit-day-block-resize:hover {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.15));
+}
+
+.planit-day-block.is-resizing {
+  opacity: 0.85;
+  user-select: none;
+}
+
 .planit-day-block.is-done .planit-day-block-title {
   text-decoration: line-through;
   opacity: 0.6;

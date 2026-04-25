@@ -32,7 +32,12 @@
 .planit-edit-task-date,
 .planit-edit-task-select {
   flex: 1;
-  padding: 4px 6px;
+  padding: 5px 8px;
+  border-radius: 8px;
+}
+
+.planit-edit-task-row .planit-quick-add-time-row {
+  flex: 1;
 }
 
 .planit-edit-task-textarea {

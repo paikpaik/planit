@@ -21,6 +21,17 @@ describe('parseTimeInput', () => {
     expect(parseTimeInput('12:60')).toEqual({ kind: 'invalid' });
   });
 
+  it('accepts 4-digit compact format (HHMM)', () => {
+    expect(parseTimeInput('1400')).toEqual({ kind: 'ok', value: '14:00' });
+    expect(parseTimeInput('0930')).toEqual({ kind: 'ok', value: '09:30' });
+    expect(parseTimeInput('2359')).toEqual({ kind: 'ok', value: '23:59' });
+  });
+
+  it('rejects out-of-range compact format', () => {
+    expect(parseTimeInput('2400')).toEqual({ kind: 'invalid' });
+    expect(parseTimeInput('1260')).toEqual({ kind: 'invalid' });
+  });
+
   it('rejects non-time input', () => {
     expect(parseTimeInput('abc')).toEqual({ kind: 'invalid' });
     expect(parseTimeInput('9')).toEqual({ kind: 'invalid' });

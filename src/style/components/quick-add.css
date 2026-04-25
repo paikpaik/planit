@@ -16,22 +16,129 @@
   font-size: 1em;
 }
 
-.planit-quick-add-time-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
+/* ── 시간 입력 (text 타입, 커스텀 피커용) ── */
 
 .planit-quick-add-time {
   width: 6em;
-  padding: 4px 6px;
+  padding: 5px 8px;
+  border: 1.5px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 0.9em;
   font-variant-numeric: tabular-nums;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.12s;
+  cursor: text;
 }
 
-.planit-quick-add-time-sep {
-  color: var(--text-muted);
+.planit-quick-add-time:hover {
+  border-color: var(--text-muted);
 }
+
+.planit-quick-add-time:focus {
+  border-color: var(--interactive-accent);
+}
+
+/* ── 두 입력을 하나의 pill로 묶기 ── */
+
+.planit-quick-add-time-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--background-modifier-border);
+  border-radius: 10px;
+  background: var(--background-primary);
+  padding: 1px 6px;
+  transition: border-color 0.12s;
+}
+
+.planit-quick-add-time-row:focus-within {
+  border-color: var(--interactive-accent);
+}
+
+/* row 컨테이너 안에서는 개별 border 해제 */
+.planit-quick-add-time-row .planit-quick-add-time {
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  width: 5em;
+  padding: 5px 4px;
+}
+
+.planit-quick-add-time-row .planit-quick-add-time:hover,
+.planit-quick-add-time-row .planit-quick-add-time:focus {
+  border-color: transparent;
+}
+
+/* 구분 기호 */
+.planit-quick-add-time-sep {
+  color: var(--text-faint);
+  font-size: 0.85em;
+  padding: 0 4px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* ── 커스텀 3컬럼 시간 피커 ── */
+
+.planit-time-picker {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  animation: planit-dropdown-in 0.12s ease;
+}
+
+@keyframes planit-dropdown-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.planit-tp-col {
+  display: flex;
+  flex-direction: column;
+  max-height: 200px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-width: 56px;
+  padding: 4px 0;
+}
+
+.planit-tp-col + .planit-tp-col {
+  border-left: 1px solid var(--background-modifier-border);
+}
+
+.planit-tp-item {
+  padding: 7px 12px;
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--text-normal);
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 0 4px;
+  transition: background 0.08s;
+  white-space: nowrap;
+}
+
+.planit-tp-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.planit-tp-item.is-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-weight: 600;
+}
+
+/* ── 기타 ── */
 
 .planit-quick-add-list {
   width: 100%;

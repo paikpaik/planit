@@ -56,9 +56,11 @@ export function formatMonthDay(month: number, day: number, dow: number): string 
 // ── 번역 사전 ──
 
 const ko = {
-  // 날짜
+  // 날짜 / 시간
   'date.today': '오늘',
   'date.tomorrow': '내일',
+  'time.am': '오전',
+  'time.pm': '오후',
 
   // 사이드바
   'sidebar.lists': '리스트',
@@ -184,6 +186,8 @@ type Translations = typeof ko;
 const en: { [K in keyof Translations]: string } = {
   'date.today': 'Today',
   'date.tomorrow': 'Tomorrow',
+  'time.am': 'AM',
+  'time.pm': 'PM',
 
   'sidebar.lists': 'Lists',
   'sidebar.allLists': 'All',

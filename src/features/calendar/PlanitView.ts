@@ -30,6 +30,7 @@ export class PlanitView extends ItemView {
   private activeNoteRef: string | null = null;
   private unsubscribeTasks: (() => void) | null = null;
   private unsubscribeLists: (() => void) | null = null;
+  private isDragging = false;
 
   constructor(leaf: WorkspaceLeaf, private plugin: PlanitPlugin) {
     super(leaf);
@@ -79,6 +80,7 @@ export class PlanitView extends ItemView {
   }
 
   private render(): void {
+    if (this.isDragging) return;
     const root = this.containerEl.children[1] as HTMLElement;
     root.empty();
     root.addClass('planit-view');
@@ -602,6 +604,11 @@ export class PlanitView extends ItemView {
 
   private renderDayView(root: HTMLElement): void {
     const HOUR_H = 60;
+    const toHHmm = (min: number): string => {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    };
     const wd = weekdayShort();
     const iso = toISODate(this.cursor);
     const allTasks = this.plugin.taskStore.getByDate(iso);
@@ -704,7 +711,57 @@ export class PlanitView extends ItemView {
       }
       block.addEventListener('click', (e) => {
         if ((e.target as HTMLElement).closest('.planit-chip-check')) return;
+        if ((e.target as HTMLElement).closest('.planit-day-block-resize')) return;
         this.openEditTask(task);
+      });
+
+      // ── resize handle ──
+      const resizeHandle = block.createDiv({ cls: 'planit-day-block-resize' });
+      let origY = 0;
+      let resizing = false;
+
+      resizeHandle.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resizeHandle.setPointerCapture(e.pointerId);
+        origY = e.clientY;
+        resizing = true;
+        this.isDragging = true;
+        block.addClass('is-resizing');
+        document.body.style.cursor = 'ns-resize';
+      });
+
+      resizeHandle.addEventListener('pointermove', (e) => {
+        if (!resizing) return;
+        const dy = e.clientY - origY;
+        // HOUR_H=60 → 1px = 1min; snap to 15min boundary
+        const newEndMin = Math.max(startMin + 15, Math.min(1440, Math.round((endMin + dy) / 15) * 15));
+        block.style.height = `${Math.max(15, (newEndMin - startMin) * HOUR_H / 60)}px`;
+      });
+
+      resizeHandle.addEventListener('pointerup', async (e) => {
+        if (!resizing) return;
+        resizing = false;
+        block.removeClass('is-resizing');
+        document.body.style.cursor = '';
+
+        const dy = e.clientY - origY;
+        const newEndMin = Math.max(startMin + 15, Math.min(1440, Math.round((endMin + dy) / 15) * 15));
+        const newEnd = toHHmm(newEndMin);
+
+        this.isDragging = false;
+        if (newEnd !== (task.end ?? toHHmm(endMin))) {
+          await this.plugin.taskStore.update(task.id, { end: newEnd });
+        }
+      });
+
+      resizeHandle.addEventListener('pointercancel', () => {
+        if (!resizing) return;
+        resizing = false;
+        block.removeClass('is-resizing');
+        document.body.style.cursor = '';
+        block.style.height = `${blockHeight}px`;
+        this.isDragging = false;
       });
     }
 

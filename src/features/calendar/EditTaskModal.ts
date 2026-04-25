@@ -6,6 +6,7 @@ import { t, weekdayShort } from '../../i18n';
 import { buildTaskPatch } from './editTask';
 import { NotePickerModal } from './NotePickerModal';
 import { parseTimeInput } from './quickAdd';
+import { attachTimePicker } from './TimePicker';
 
 export interface EditTaskCallbacks {
   onSave: (patch: ReturnType<typeof buildTaskPatch>) => Promise<void>;
@@ -13,6 +14,8 @@ export interface EditTaskCallbacks {
 }
 
 export class EditTaskModal extends Modal {
+  private detachPickers: Array<() => void> = [];
+
   constructor(
     app: App,
     private task: Task,
@@ -46,19 +49,21 @@ export class EditTaskModal extends Modal {
 
     const timeRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
     timeRow.createEl('label', { text: t('editTask.labelTime'), cls: 'planit-edit-task-label' });
-    const startInput = timeRow.createEl('input', {
+    const timePill = timeRow.createDiv({ cls: 'planit-quick-add-time-row' });
+    const startInput = timePill.createEl('input', {
       type: 'text',
       cls: 'planit-quick-add-time',
       attr: { placeholder: 'HH:mm' },
     }) as HTMLInputElement;
     startInput.value = this.task.start ?? '';
-    timeRow.createSpan({ cls: 'planit-quick-add-time-sep', text: '—' });
-    const endInput = timeRow.createEl('input', {
+    timePill.createSpan({ cls: 'planit-quick-add-time-sep', text: '—' });
+    const endInput = timePill.createEl('input', {
       type: 'text',
       cls: 'planit-quick-add-time',
       attr: { placeholder: 'HH:mm' },
     }) as HTMLInputElement;
     endInput.value = this.task.end ?? '';
+    this.detachPickers = [attachTimePicker(startInput), attachTimePicker(endInput)];
 
     const listRow = contentEl.createDiv({ cls: 'planit-edit-task-row' });
     listRow.createEl('label', { text: t('editTask.labelList'), cls: 'planit-edit-task-label' });
@@ -366,6 +371,8 @@ export class EditTaskModal extends Modal {
   }
 
   onClose(): void {
+    this.detachPickers.forEach((fn) => fn());
+    this.detachPickers = [];
     this.contentEl.empty();
   }
 }

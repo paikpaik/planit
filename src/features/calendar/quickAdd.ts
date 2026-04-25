@@ -5,21 +5,29 @@ export type ParsedTime =
   | { kind: 'ok'; value: string }
   | { kind: 'invalid' };
 
-const TIME_PATTERN = /^(\d{1,2}):(\d{2})$/;
+const TIME_COLON   = /^(\d{1,2}):(\d{2})$/;
+const TIME_COMPACT = /^(\d{2})(\d{2})$/;   // "1400" → "14:00"
 
 export function parseTimeInput(raw: string): ParsedTime {
   const trimmed = raw.trim();
   if (trimmed === '') return { kind: 'empty' };
 
-  const match = TIME_PATTERN.exec(trimmed);
-  if (!match) return { kind: 'invalid' };
+  let hh: number;
+  let mm: number;
 
-  const hh = Number(match[1]);
-  const mm = Number(match[2]);
-  if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return { kind: 'invalid' };
+  const colonMatch = TIME_COLON.exec(trimmed);
+  if (colonMatch) {
+    hh = Number(colonMatch[1]);
+    mm = Number(colonMatch[2]);
+  } else {
+    const compactMatch = TIME_COMPACT.exec(trimmed);
+    if (!compactMatch) return { kind: 'invalid' };
+    hh = Number(compactMatch[1]);
+    mm = Number(compactMatch[2]);
+  }
 
-  const value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-  return { kind: 'ok', value };
+  if (hh > 23 || mm > 59) return { kind: 'invalid' };
+  return { kind: 'ok', value: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}` };
 }
 
 export interface QuickAddParams {

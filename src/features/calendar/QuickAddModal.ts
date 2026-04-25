@@ -5,6 +5,7 @@ import type { TaskInput } from '../../core/store';
 import type { List } from '../../core/types';
 import { t } from '../../i18n';
 import { buildTaskInput, parseTimeInput } from './quickAdd';
+import { attachTimePicker } from './TimePicker';
 
 export interface QuickAddDefaults {
   date: string | null;
@@ -14,6 +15,8 @@ export interface QuickAddDefaults {
 }
 
 export class QuickAddModal extends Modal {
+  private detachPickers: Array<() => void> = [];
+
   constructor(
     app: App,
     private defaults: QuickAddDefaults,
@@ -51,7 +54,8 @@ export class QuickAddModal extends Modal {
       type: 'text',
       cls: 'planit-quick-add-time',
       attr: { placeholder: 'HH:mm', 'aria-label': t('quickAdd.endAriaLabel') },
-    });
+    }) as HTMLInputElement;
+    this.detachPickers = [attachTimePicker(startInput), attachTimePicker(endInput)];
 
     const listSelect = contentEl.createEl('select', { cls: 'planit-quick-add-list' });
     for (const list of this.defaults.lists) {
@@ -124,6 +128,8 @@ export class QuickAddModal extends Modal {
   }
 
   onClose(): void {
+    this.detachPickers.forEach((fn) => fn());
+    this.detachPickers = [];
     this.contentEl.empty();
   }
 }
