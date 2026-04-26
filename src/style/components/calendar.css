@@ -222,6 +222,8 @@
   padding: 4px 6px;
   position: relative;
   cursor: pointer;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .planit-cell.is-drop-target {
@@ -346,6 +348,7 @@
   color: var(--text-normal);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .planit-chip-recurrence {
