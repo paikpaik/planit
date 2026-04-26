@@ -261,6 +261,7 @@
   justify-content: center;
 }
 
+
 .planit-cell-date {
   font-size: 0.85em;
   font-weight: 500;
@@ -411,12 +412,6 @@
 .planit-week-col.is-today .planit-week-col-date {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
-  border-radius: 999px;
-  width: 1.6em;
-  height: 1.6em;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .planit-week-col-header {
@@ -438,6 +433,12 @@
   font-size: 1em;
   font-weight: 600;
   margin-top: 2px;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
 }
 
 .planit-week-col-tasks {
