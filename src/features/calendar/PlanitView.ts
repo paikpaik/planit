@@ -1,5 +1,5 @@
 import type { WorkspaceLeaf } from 'obsidian';
-import { ItemView, Menu, Notice, setIcon } from 'obsidian';
+import { ItemView, Menu, Notice, setIcon, setTooltip } from 'obsidian';
 
 import type { List, Task } from '../../core/types';
 import { VIEW_TYPE_PLANIT } from '../../core/types';
@@ -437,16 +437,19 @@ export class PlanitView extends ItemView {
     });
   }
 
-  private renderCellTasks(cell: HTMLElement, tasks: Task[]): void {
-    if (tasks.length === 0) return;
-    const list = cell.createDiv({ cls: 'planit-cell-tasks' });
-    for (const task of tasks) {
-      const chip = list.createDiv({ cls: 'planit-chip' });
-      chip.draggable = true;
-      if (task.done) chip.addClass('is-done');
-      const chipList = this.plugin.listStore.getById(task.listId);
-      if (chipList) chip.style.borderLeft = `3px solid ${chipList.color}`;
+  private renderChip(container: HTMLElement, task: Task, opts: { draggable?: boolean } = {}): void {
+    const chip = container.createDiv({ cls: 'planit-chip' });
+    if (task.done) chip.addClass('is-done');
+    const chipList = this.plugin.listStore.getById(task.listId);
+    if (chipList) chip.style.borderLeft = `3px solid ${chipList.color}`;
 
+    if (task.start) {
+      const timeText = task.end ? `${task.start} – ${task.end}` : task.start;
+      setTooltip(chip, timeText);
+    }
+
+    if (opts.draggable) {
+      chip.draggable = true;
       chip.addEventListener('dragstart', (e) => {
         if (e.dataTransfer) {
           e.dataTransfer.setData('text/plain', task.id);
@@ -454,37 +457,38 @@ export class PlanitView extends ItemView {
         }
         chip.addClass('is-dragging');
       });
-      chip.addEventListener('dragend', () => {
-        chip.removeClass('is-dragging');
-      });
+      chip.addEventListener('dragend', () => chip.removeClass('is-dragging'));
+    }
 
-      const checkbox = chip.createEl('button', {
-        cls: 'planit-chip-check',
-        attr: { 'aria-label': task.done ? t('task.undone') : t('task.done') },
-      });
-      checkbox.addEventListener('click', (e) => {
-        e.stopPropagation();
-        void this.plugin.taskStore.toggleDone(task.id);
-      });
+    const checkbox = chip.createEl('button', {
+      cls: 'planit-chip-check',
+      attr: { 'aria-label': task.done ? t('task.undone') : t('task.done') },
+    });
+    checkbox.addEventListener('click', (e) => {
+      e.stopPropagation();
+      void this.plugin.taskStore.toggleDone(task.id);
+    });
 
-      if (task.priority !== 'none') {
-        chip.createDiv({ cls: `planit-priority-dot priority-${task.priority}` });
-      }
+    if (task.priority !== 'none') {
+      chip.createDiv({ cls: `planit-priority-dot priority-${task.priority}` });
+    }
 
-      const body = chip.createDiv({ cls: 'planit-chip-body' });
-      if (task.start) {
-        body.createSpan({ cls: 'planit-chip-time', text: task.start });
-      }
-      body.createSpan({ cls: 'planit-chip-title', text: task.title });
-      if (task.recurrence !== null) {
-        const recIcon = body.createSpan({ cls: 'planit-chip-recurrence' });
-        setIcon(recIcon, 'repeat-2');
-      }
+    const body = chip.createDiv({ cls: 'planit-chip-body' });
+    body.createSpan({ cls: 'planit-chip-title', text: task.title });
+    if (task.start) {
+      setIcon(body.createSpan({ cls: 'planit-chip-recurrence' }), 'clock');
+    }
+    if (task.recurrence !== null) {
+      setIcon(body.createSpan({ cls: 'planit-chip-recurrence' }), 'repeat-2');
+    }
+    body.addEventListener('click', (e) => { e.stopPropagation(); this.openEditTask(task); });
+  }
 
-      body.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.openEditTask(task);
-      });
+  private renderCellTasks(cell: HTMLElement, tasks: Task[]): void {
+    if (tasks.length === 0) return;
+    const list = cell.createDiv({ cls: 'planit-cell-tasks' });
+    for (const task of tasks) {
+      this.renderChip(list, task, { draggable: true });
     }
   }
 
@@ -630,27 +634,7 @@ export class PlanitView extends ItemView {
       allDaySection.createDiv({ cls: 'planit-day-allday-label', text: t('dayView.allDay') });
       const chips = allDaySection.createDiv({ cls: 'planit-day-allday-chips' });
       for (const task of allDayTasks) {
-        const chip = chips.createDiv({ cls: 'planit-chip' });
-        if (task.done) chip.addClass('is-done');
-        const chipList = this.plugin.listStore.getById(task.listId);
-        if (chipList) chip.style.borderLeft = `3px solid ${chipList.color}`;
-        const checkbox = chip.createEl('button', {
-          cls: 'planit-chip-check',
-          attr: { 'aria-label': task.done ? t('task.undone') : t('task.done') },
-        });
-        checkbox.addEventListener('click', (e) => {
-          e.stopPropagation();
-          void this.plugin.taskStore.toggleDone(task.id);
-        });
-        if (task.priority !== 'none') {
-          chip.createDiv({ cls: `planit-priority-dot priority-${task.priority}` });
-        }
-        const body = chip.createDiv({ cls: 'planit-chip-body' });
-        body.createSpan({ cls: 'planit-chip-title', text: task.title });
-        if (task.recurrence !== null) {
-          setIcon(body.createSpan({ cls: 'planit-chip-recurrence' }), 'repeat-2');
-        }
-        body.addEventListener('click', (e) => { e.stopPropagation(); this.openEditTask(task); });
+        this.renderChip(chips, task);
       }
     }
 
@@ -935,35 +919,7 @@ export class PlanitView extends ItemView {
 
       const taskArea = col.createDiv({ cls: 'planit-week-col-tasks' });
       for (const task of tasks) {
-        const chip = taskArea.createDiv({ cls: 'planit-chip' });
-        if (task.done) chip.addClass('is-done');
-        const chipList = this.plugin.listStore.getById(task.listId);
-        if (chipList) chip.style.borderLeft = `3px solid ${chipList.color}`;
-
-        const checkbox = chip.createEl('button', {
-          cls: 'planit-chip-check',
-          attr: { 'aria-label': task.done ? t('task.undone') : t('task.done') },
-        });
-        checkbox.addEventListener('click', (e) => {
-          e.stopPropagation();
-          void this.plugin.taskStore.toggleDone(task.id);
-        });
-
-        if (task.priority !== 'none') {
-          chip.createDiv({ cls: `planit-priority-dot priority-${task.priority}` });
-        }
-
-        const body = chip.createDiv({ cls: 'planit-chip-body' });
-        if (task.start) body.createSpan({ cls: 'planit-chip-time', text: task.start });
-        body.createSpan({ cls: 'planit-chip-title', text: task.title });
-        if (task.recurrence !== null) {
-          const recIcon = body.createSpan({ cls: 'planit-chip-recurrence' });
-          setIcon(recIcon, 'repeat-2');
-        }
-        body.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.openEditTask(task);
-        });
+        this.renderChip(taskArea, task);
       }
 
       taskArea.addEventListener('click', (e) => {

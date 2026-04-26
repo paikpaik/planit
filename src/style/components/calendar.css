@@ -286,6 +286,7 @@
   background: var(--background-modifier-hover);
   font-size: 0.78em;
   line-height: 1.25;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -336,12 +337,6 @@
   cursor: pointer;
   flex: 1;
   min-width: 0;
-}
-
-.planit-chip-time {
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
 }
 
 .planit-chip-title {
