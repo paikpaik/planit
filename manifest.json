@@ -1,7 +1,7 @@
 {
   "id": "planit",
   "name": "Planit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": "1.0.0",
   "description": "옵시디언 캘린더 + 태스크 통합 플러그인",
   "author": "paikpaik",

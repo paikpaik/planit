@@ -222,6 +222,8 @@
   padding: 4px 6px;
   position: relative;
   cursor: pointer;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .planit-cell.is-drop-target {
@@ -261,6 +263,7 @@
   justify-content: center;
 }
 
+
 .planit-cell-date {
   font-size: 0.85em;
   font-weight: 500;
@@ -283,6 +286,7 @@
   background: var(--background-modifier-hover);
   font-size: 0.78em;
   line-height: 1.25;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -335,16 +339,11 @@
   min-width: 0;
 }
 
-.planit-chip-time {
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-
 .planit-chip-title {
   color: var(--text-normal);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .planit-chip-recurrence {
@@ -411,12 +410,6 @@
 .planit-week-col.is-today .planit-week-col-date {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
-  border-radius: 999px;
-  width: 1.6em;
-  height: 1.6em;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .planit-week-col-header {
@@ -438,6 +431,12 @@
   font-size: 1em;
   font-weight: 600;
   margin-top: 2px;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
 }
 
 .planit-week-col-tasks {
